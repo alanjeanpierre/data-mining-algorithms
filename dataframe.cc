@@ -35,7 +35,7 @@ void DataFrame::ReadCSV(char* file) {
                 types->push_back(DType::getType(getXthWord(line, 3)));
             } else if (line.compare(0, 5, "@DATA") == 0) {
                 break;
-            } else if (line.compare(0, 9, "@RELATION")) {
+            } else if (line.compare(0, 9, "@RELATION") == 0) {
                 name = getXthWord(line, 2);
             }
         }
