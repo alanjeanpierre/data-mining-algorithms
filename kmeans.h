@@ -3,12 +3,41 @@
 
 #include <vector>
 
+
+struct Row {
+    std::vector<double> *r;
+};
+
+class Cluster {
+private:
+    int n_attributes;
+    int n_points;
+    std::vector<double> centroid;
+    std::vector<int> points;
+    double *data;
+    int rows;
+    int columns;
+    
+    void ResetCentroid();
+    
+public:
+    Cluster(double *data, int rows, int columns);
+    void AddPoint(int row);
+    bool CalcCentroid();
+    double MinkowskiDist(double *d, int n);
+    void PrintCentroid();
+    void ResetPoints();
+    
+    
+};
+
 class KMeans {
     private:
-        std::vector<std::vector<double> > *data;
         int n_clusters;
         int max_iter;
-        std::vector<int> labels;
+        int rand_seed;
+        std::vector<Cluster> clusters;
+        
 
     public:
         KMeans(int n_clusters=8, int max_iter=300, int random_state=-1);
@@ -19,5 +48,6 @@ class KMeans {
         std::vector<int> *predict(std::vector<std::vector<double> > *data);
 
 };
+
 
 #endif
