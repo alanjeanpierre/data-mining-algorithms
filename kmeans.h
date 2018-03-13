@@ -38,6 +38,8 @@ class KMeans {
         int rand_seed;
         std::vector<Cluster> clusters;
         
+        int NearestCluster(double *row, int n);
+        
 
     public:
         KMeans(int n_clusters=8, int max_iter=300, int random_state=-1);
@@ -45,7 +47,7 @@ class KMeans {
         
         // can't use vectors
         std::vector<int> *fit_predict(std::vector<std::vector<double> > *data);
-        std::vector<int> *predict(std::vector<std::vector<double> > *data);
+        int predict(double *row, int n);
 
 };
 

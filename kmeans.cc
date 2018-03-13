@@ -54,18 +54,7 @@ void KMeans::fit(double *invec, int n, int m) {
         // reassign points
         for (int i = 0; i < n; i++) {
             d = invec + i * m;
-            
-            // nearest centroid
-            double mindist = 1 << 30; // hsould set to some max double?
-            int minindex = 0;
-            for (int c = 0; c < n_clusters; c++) {
-                double dist = clusters[c].MinkowskiDist(d, m);
-                if (dist < mindist) {
-                    mindist = dist;
-                    minindex = c;
-                }
-            }
-            
+           int minindex = NearestCluster(d, m);
             clusters[minindex].AddPoint(i);   
         }
     }
@@ -78,13 +67,27 @@ void KMeans::fit(double *invec, int n, int m) {
     
 }
 
+int KMeans::NearestCluster(double *row, int n) {
+     // nearest centroid
+    double mindist = 1 << 30; // hsould set to some max double?
+    int minindex = 0;
+    for (int c = 0; c < n_clusters; c++) {
+        double dist = clusters[c].MinkowskiDist(row, n);
+        if (dist < mindist) {
+            mindist = dist;
+            minindex = c;
+        }
+    }
+    
+    return minindex;
+}
 
 std::vector<int> *KMeans::fit_predict(std::vector<std::vector<double> > *data) {
     ;
 }
 
-std::vector<int> *KMeans::predict(std::vector<std::vector<double> > *data) {
-    ;
+int KMeans::predict(double *row, int n) {
+    return NearestCluster(row, n);
 }
 
 
