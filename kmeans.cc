@@ -10,6 +10,13 @@ bool withinTolerance(double a, double b, double t = 0.01);
 
 
 KMeans::KMeans(int n_clusters, int max_iter, int random_state) {
+
+    if (n_clusters < 1 || max_iter < 1) {
+        n_clusters = 1;
+        max_iter = 1;
+        std::cerr << "Error: values must be positive non-zero" << std::endl;
+    }
+
     this->n_clusters = n_clusters;
     this->max_iter = max_iter;
     
@@ -22,10 +29,11 @@ KMeans::KMeans(int n_clusters, int max_iter, int random_state) {
 void KMeans::fit(double *invec, int n, int m) {
     
     std::srand(rand_seed);
+    n_attributes = m;
     
     // allocate clusters
     for (int i = 0; i < n_clusters; i++)
-        clusters.push_back(Cluster(invec, n, m));
+        clusters.push_back(Cluster(invec, n, n_attributes));
     
     // initial random assignment of clusters
     for (int i = 0; i < n; i++) {
@@ -36,7 +44,7 @@ void KMeans::fit(double *invec, int n, int m) {
     // run until no change in clusters
     bool diff = true;
     
-    for (int runs = 0; runs < max_iter; runs++) {
+    for (int runs = 0; diff && runs < max_iter; runs++) {
         
         diff = false;
         // calculate centroids
@@ -44,8 +52,8 @@ void KMeans::fit(double *invec, int n, int m) {
             diff |= clusters[i].CalcCentroid();
         }
         
-        if (!diff)
-            break;
+        //if (!diff)
+        //    break;
         
         for (int i = 0; i < n_clusters; i++)
             clusters[i].ResetPoints();
@@ -53,21 +61,22 @@ void KMeans::fit(double *invec, int n, int m) {
         double *d;
         // reassign points
         for (int i = 0; i < n; i++) {
-            d = invec + i * m;
-           int minindex = NearestCluster(d, m);
+            d = invec + i * n_attributes;
+           int minindex = NearestCluster(d, n_attributes);
             clusters[minindex].AddPoint(i);   
         }
-    }
-    
-    for (int i = 0; i < n_clusters; i++) {
-        std::cout << "Cluster #" << i << " centroid: ";
-        clusters[i].PrintCentroid();
-    }
-    
-    
+    }   
 }
 
 int KMeans::NearestCluster(double *row, int n) {
+
+    if (n != n_attributes) {
+        std::cerr << "Error: num input attributes (" << n 
+                  << ") doesn't match num cluster attributes (" 
+                  << n_attributes << ")" << std::endl;
+        return 0;
+    }
+
      // nearest centroid
     double mindist = 1 << 30; // hsould set to some max double?
     int minindex = 0;
@@ -82,8 +91,21 @@ int KMeans::NearestCluster(double *row, int n) {
     return minindex;
 }
 
-std::vector<int> *KMeans::fit_predict(std::vector<std::vector<double> > *data) {
-    ;
+void KMeans::GetClusters(double *arr, int rows, int cols) {
+
+    if (rows != n_clusters || cols != n_attributes) {
+        std::cerr << "Error: input array dimensions (" <<
+                  rows << ", " << cols << ") don't match cluster dimensions ("
+                  << n_clusters << ", " << n_attributes << ")!" << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < n_clusters; i++) {
+        std::vector<double> centroid = clusters[i].GetCentroid();
+        for (int j = 0; j < n_attributes; j++) {
+            arr[index(cols, i, j)] = centroid[j];
+        }
+    }
 }
 
 int KMeans::predict(double *row, int n) {
@@ -172,8 +194,16 @@ void Cluster::ResetPoints() {
     n_points = 0;
 }
 
+int Cluster::GetNumAttrs() {
+    return n_attributes;
+}
+
+std::vector<double> Cluster::GetCentroid() {
+    return centroid;
+}
 
 // helper function for comparing doubles
 bool withinTolerance(double a, double b, double t) {
     return std::abs(a - b) <= t;
 }
+

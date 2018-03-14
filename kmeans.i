@@ -15,5 +15,7 @@
 
 %apply(double* IN_ARRAY2, int DIM1, int DIM2) {(double *invec, int n, int m)}
 %apply(double* IN_ARRAY1, int DIM1) {(double *row, int n)}
+%apply(double* INPLACE_ARRAY2, int DIM1, int DIM2) {(double *arr, int rows, int cols)}
+%apply(double* ARGOUT_ARRAY1, int DIM1, int nth) {(double *arr, int cols, int nth)}
 
 %include "kmeans.h"
