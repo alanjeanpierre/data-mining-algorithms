@@ -1,0 +1,9 @@
+*.o
+*.so
+*.cxx
+*.swg
+agnes.py
+kmeans.py
+dbscan.py
+\.ipynb_checkpoints/
+__pycache__/
