@@ -163,6 +163,7 @@ double Agnes::Cluster::Distance(Cluster other) {
 
 // should precompte this for the whole table
 // instead of running each time
+// it's literally O(k*n^5) right now with a huge constant too because of fp and division
 double Agnes::Cluster::MinkowskiDist(std::vector<double> c1, std::vector<double> c2, int n) {
     double s = 0;
 
