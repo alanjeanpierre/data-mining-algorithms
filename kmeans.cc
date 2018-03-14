@@ -113,7 +113,7 @@ int KMeans::predict(double *row, int n) {
 }
 
 
-Cluster::Cluster(double *data, int rows, int columns) {
+KMeans::Cluster::Cluster(double *data, int rows, int columns) {
     this->data = data;
     this->rows = rows;
     this->columns = columns;
@@ -126,20 +126,20 @@ Cluster::Cluster(double *data, int rows, int columns) {
     
 }
 
-void Cluster::ResetCentroid() {
+void KMeans::Cluster::ResetCentroid() {
 
     centroid.clear();
     for (int i = 0; i < n_attributes; i++ )
         centroid.push_back(0);
 }
 
-void Cluster::AddPoint(int row) {
+void KMeans::Cluster::AddPoint(int row) {
     
     points.push_back(row);
     n_points += 1;
 }
 
-bool Cluster::CalcCentroid() {
+bool KMeans::Cluster::CalcCentroid() {
     
     
     double *old = new double[n_attributes];
@@ -169,7 +169,7 @@ bool Cluster::CalcCentroid() {
     return diff;
 }
 
-double Cluster::MinkowskiDist(double *d, int n) {
+double KMeans::Cluster::MinkowskiDist(double *d, int n) {
     double s = 0;
     
     if (n != n_attributes)
@@ -182,23 +182,23 @@ double Cluster::MinkowskiDist(double *d, int n) {
     return std::sqrt(s);
 }
 
-void Cluster::PrintCentroid() {
+void KMeans::Cluster::PrintCentroid() {
     std::cout << "[ " ;
     for (int i = 0; i < n_attributes; i++) 
         std::cout << centroid[i] << ", ";
     std::cout << "]" << std::endl;
 }
 
-void Cluster::ResetPoints() {
+void KMeans::Cluster::ResetPoints() {
     points.clear();
     n_points = 0;
 }
 
-int Cluster::GetNumAttrs() {
+int KMeans::Cluster::GetNumAttrs() {
     return n_attributes;
 }
 
-std::vector<double> Cluster::GetCentroid() {
+std::vector<double> KMeans::Cluster::GetCentroid() {
     return centroid;
 }
 
