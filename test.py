@@ -42,3 +42,20 @@ sys.stderr.write("Done init\n")
 sys.stderr.write("Fitting\n")
 ag.Fit(a)
 sys.stderr.write("Done fitting\n")
+sys.stderr.write("Cluster representation\n")
+clusters = np.ndarray((5,1), dtype=float)
+
+print(len(a))
+
+print(ag.GetLabels(len(a)))
+
+from sklearn import datasets
+blobs, _ = datasets.make_blobs(n_samples=300, random_state=10)
+
+ag = agnes.Agnes(3)
+skk.fit(blobs)
+print("sklearn clusters")
+print(skk.labels_[:30])
+ag.Fit(blobs)
+print('agnes clusters')
+print(ag.GetLabels(len(blobs)).astype(np.int)[:30])
