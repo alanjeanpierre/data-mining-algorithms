@@ -8,29 +8,29 @@ class KMeans {
     private:
 
     class Cluster {
-    private:
-        int n_attributes;
-        int n_points;
-        std::vector<double> centroid;
-        std::vector<int> points;
-        double *data;
-        int rows;
-        int columns;
-        
-        void ResetCentroid();
-        
-    public:
-        Cluster(double *data, int rows, int columns);
-        void AddPoint(int row);
-        bool CalcCentroid();
-        double MinkowskiDist(double *d, int n);
-        void PrintCentroid();
-        void ResetPoints();
-        int GetNumAttrs();
-        std::vector<double> GetCentroid();
-        
-        
-    };
+        private:
+            int n_attributes;
+            int n_points;
+            std::vector<double> centroid;
+            std::vector<int> points;
+            double *data;
+            int rows;
+            int columns;
+            
+            void ResetCentroid();
+            
+        public:
+            Cluster(double *data, int rows, int columns);
+            void AddPoint(int row);
+            bool CalcCentroid();
+            double MinkowskiDist(double *d, int n);
+            void PrintCentroid();
+            void ResetPoints();
+            int GetNumAttrs();
+            std::vector<double> GetCentroid();
+            
+            
+        };
 
         int n_clusters;
         int n_attributes;
