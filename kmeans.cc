@@ -35,8 +35,18 @@ void KMeans::Fit(double *invec, int n, int m) {
     for (int i = 0; i < n_clusters; i++)
         clusters.push_back(Cluster(invec, n, n_attributes));
     
-    // initial random assignment of clusters
-    for (int i = 0; i < n; i++) {
+    int i;
+
+    // initial diff assignment of clusters
+    // this is to ensure there are AT LEAST n_clusters
+    // and aren't randomly assigned to the same one
+    for (i = 0; i < n_clusters; i++) {
+        clusters[i].AddPoint(i);
+    }
+
+    // initial random assignment of remaining clusters
+    // starting where prev assignment left off
+    for (; i < n; i++) {
         int centroid = std::rand()%n_clusters;
         clusters[centroid].AddPoint(i);
     }
