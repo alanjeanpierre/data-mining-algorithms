@@ -27,12 +27,7 @@ KMeans::KMeans(int n_clusters, int max_iter, int random_state) {
         this->rand_seed = random_state;
 }
 
-void KMeans::Fit(double *invec, int n, int m) {
-    
-    std::srand(rand_seed);
-    n_attributes = m;
-    
-    // copy data to internal data structure
+void KMeans::CopyData(double *invec, int n, int m) {
     data = new std::vector<std::vector<double> >();
     for (int i = 0; i < n; i++) {
         double *d = invec + i*n_attributes;
@@ -52,6 +47,31 @@ void KMeans::Fit(double *invec, int n, int m) {
         #endif
         data->push_back(t);
     }
+
+}
+
+void KMeans::PrintClusters() {
+    for (int i = 0; i < n_clusters; i++) {
+        std::cerr << "Points in Cluster #" << i << std::endl;
+        std::vector<int> *pts = clusters[i].GetPoints();
+        for (int j = 0; j < pts->size(); j++) {
+            std::cerr << "<";
+            for (int k = 0; k < n_attributes; k++) {
+                std::cerr << data->at(pts->at(j))[k] << ",";
+            }
+            std::cerr << ">" << std::endl;
+        }
+        std::cerr << std::endl;
+    }
+}
+
+void KMeans::Fit(double *invec, int n, int m) {
+    
+    std::srand(rand_seed);
+    n_attributes = m;
+    
+    // copy data to internal data structure
+    CopyData(invec, n, m);
 
     // allocate clusters
     for (int i = 0; i < n_clusters; i++)
@@ -80,18 +100,7 @@ void KMeans::Fit(double *invec, int n, int m) {
     }
 
     #ifdef _DEBUG
-    for (int i = 0; i < n_clusters; i++) {
-        std::cerr << "Points in Cluster #" << i << std::endl;
-        std::vector<int> *pts = clusters[i].GetPoints();
-        for (int j = 0; j < pts->size(); j++) {
-            std::cerr << "<";
-            for (int k = 0; k < n_attributes; k++) {
-                std::cerr << data->at(pts->at(j))[k] << ",";
-            }
-            std::cerr << ">" << std::endl;
-        }
-        std::cerr << std::endl;
-    }
+    PrintClusters();
     #endif
     
     // run until no change in clusters
@@ -107,18 +116,11 @@ void KMeans::Fit(double *invec, int n, int m) {
         diff = false;
         // calculate centroids
         for (int i = 0; i < n_clusters; i++) {
-            diff |= clusters[i].CalcCentroid();
             #ifdef _DEBUG
-            std::cerr << "New centroid for cluster " << i << " is: <";
-            std::vector<double> c = clusters[i].GetCentroid();
-            for (int i = 0; i < n_attributes; i++)
-                std::cerr << c[i] << ", ";
-            std::cerr << ">" << std::endl;
+            std::cerr << "New centroid for cluster #" << i << " <";
             #endif
+            diff |= clusters[i].CalcCentroid();
         }
-        
-        //if (!diff)
-        //    break;
         
         for (int i = 0; i < n_clusters; i++)
             clusters[i].ResetPoints();
@@ -128,24 +130,14 @@ void KMeans::Fit(double *invec, int n, int m) {
             std::vector<double> *d = &(data->at(i));
             int minindex = NearestCluster(d);
             clusters[minindex].AddPoint(i);   
+            
             #ifdef _DEBUG
             std::cerr << "Adding point " << i << " to cluster " << minindex << std::endl;
             #endif
         }
 
         #ifdef _DEBUG
-        for (int i = 0; i < n_clusters; i++) {
-            std::cerr << "Points in Cluster #" << i << std::endl;
-            std::vector<int> *pts = clusters[i].GetPoints();
-            for (int j = 0; j < pts->size(); j++) {
-                std::cerr << "<";
-                for (int k = 0; k < n_attributes; k++) {
-                    std::cerr << data->at(pts->at(j))[k] << ",";
-                }
-                std::cerr << ">" << std::endl;
-            }
-            std::cerr << std::endl;
-        }
+        PrintClusters();
         #endif
     }   
 }
@@ -263,7 +255,14 @@ bool KMeans::Cluster::CalcCentroid() {
     }    
 
     delete old;
-    
+
+
+    #ifdef _DEBUG
+    for (int i = 0; i < n_attributes; i++)
+        std::cerr << centroid[i] << ", ";
+    std::cerr << ">" << std::endl;
+    #endif
+
     return diff;
 }
 

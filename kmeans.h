@@ -42,6 +42,8 @@ class KMeans {
         std::vector<Cluster> clusters;
         
         int NearestCluster(std::vector<double> *datapoint);
+        void CopyData(double *invec, int n, int m);
+        void PrintClusters();
         
 
     public:
