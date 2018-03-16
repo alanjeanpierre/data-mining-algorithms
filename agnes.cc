@@ -124,6 +124,11 @@ void Agnes::GetLabels(int *out, int n) {
         }
     }
 
+    for (int i = 0; i < n_clusters; i++) {
+        delete clustersets[i];
+    }
+    delete clustersets;
+
 }
 
 void Agnes::PrintRow(int n) {
@@ -136,7 +141,6 @@ Agnes::Cluster::Cluster(std::vector<std::vector<double> > *data, int point) {
     this->data = data;
     datapoints.push_back(point);
 }
-
 
 std::vector<int> *Agnes::Cluster::GetPoints() {
     return &datapoints;
