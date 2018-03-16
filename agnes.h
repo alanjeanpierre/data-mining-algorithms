@@ -2,6 +2,7 @@
 #define _AGNES_H
 
 #include <vector>
+#include <map>
 
 
 class Agnes {
@@ -13,12 +14,14 @@ private:
             std::vector<int> datapoints;
             int n_attributes;
             Cluster *left, *right;
+            int id;
         public:
             Cluster(std::vector<std::vector<double> > *data, int point);
             Cluster(std::vector<std::vector<double> > *data, Cluster *l, Cluster *r);
-            double Distance(Cluster other, std::vector<std::vector<double> > *distmatrix);
+            double Distance(Cluster *other, std::vector<std::vector<double> > *distmatrix);
             std::vector<int> *GetPoints();
             void PrintCluster();
+            int GetID();
 
             
             static double MinkowskiDist(std::vector<double> c1, std::vector<double> c2, int n);
@@ -27,7 +30,8 @@ private:
     std::vector<std::vector<double> > data;
     int n_clusters;
     int n_attributes;
-    std::vector<Cluster*> clusters;
+    //std::vector<Cluster*> clusters;
+    std::map<int, Cluster*> clusters;
     void PrintRow(int n);
     
 

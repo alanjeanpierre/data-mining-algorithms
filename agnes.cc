@@ -4,6 +4,10 @@
 #include <vector>
 #include <cmath>
 #include <unordered_set>
+#include <map>
+#include <algorithm>
+
+static int id_counter;
 
 Agnes::Agnes(int n) {
 
@@ -24,7 +28,7 @@ void Agnes::Fit(double *arr, int rows, int cols) {
 
     std::vector<std::vector<double> > *distmatrix = new std::vector<std::vector<double> >();
     distmatrix->resize(rows);
-    clusters.resize(rows);
+    //clusters.resize(rows);
 
     // build initial single value clusters
     double *d = arr;
@@ -50,7 +54,9 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         //PrintRow(i);
 
         // initialize single clusters
-        clusters[i] = new Cluster(&data, i);
+        Cluster *tmp = new Cluster(&data, i);
+
+        clusters.insert(std::pair<int, Cluster*>(tmp->GetID(), tmp));
         
         // increment data points
         d += i*n_attributes;
@@ -71,6 +77,8 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         }
     }
 
+    std::vector<Cluster*> NNChain;
+
     #ifdef _DEBUG
     int iter = 1;
     #endif
@@ -78,6 +86,43 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         #ifdef _DEBUG
         std::cerr << "Iteration " << iter++ << std::endl;
         #endif
+
+        if (NNChain.size() == 0)
+            NNChain.push_back(clusters.begin()->second);
+
+        Cluster *active_cluster = NNChain.back();
+        Cluster *next_nearest;
+        double min = 1 << 30;
+        for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
+            if (active_cluster->GetID() == it->second->GetID())
+                continue;
+            double t = active_cluster->Distance(it->second, distmatrix);
+            #ifdef _DEBUG
+                std::cerr << "Distance: " << active_cluster->GetID() << ":" << it->second->GetID() << " = " << t << std::endl;
+            #endif
+            if (t < min) {
+                min = t;
+                next_nearest = it->second;
+            }
+        }
+
+        #ifdef _DEBUG
+        std::cerr << "Found nearest to " << active_cluster->GetID() << ": " <<next_nearest->GetID() << std::endl;
+        #endif
+
+        if (std::find(NNChain.begin(), NNChain.end(), next_nearest) == NNChain.end()) {
+            // stack does not contain next nearest
+            NNChain.push_back(next_nearest);
+            #ifdef _DEBUG
+            std::cerr << "Stack doesn't contain nearest" << std::endl;
+            #endif
+            continue;
+        }
+
+        // else
+        
+
+        /*
         double min = 1 << 30;
         int min_i = 0;
         int min_j = 0;
@@ -95,16 +140,27 @@ void Agnes::Fit(double *arr, int rows, int cols) {
                 }
             }
         }
+        */
+        Cluster *l = NNChain.back();
+        NNChain.pop_back();
+        Cluster *r = NNChain.back();
+        NNChain.pop_back();
 
+        clusters.erase(l->GetID());
+        clusters.erase(r->GetID());
+
+
+        /*
         Cluster *l = clusters[min_i];
         Cluster *r = clusters[min_j];
         clusters[min_i] = clusters.back();
         clusters.pop_back();
         clusters[min_j] = clusters.back();
         clusters.pop_back();
+        */
 
         #ifdef _DEBUG
-        std::cerr << "Merging clusters " << min_i << " and " << min_j << std::endl;
+        std::cerr << "Merging clusters " << l->GetID() << " and " << r->GetID() << std::endl;
         l->PrintCluster();
         std::cerr << std::endl;
         r->PrintCluster();
@@ -112,7 +168,10 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         #endif
         
 
-        clusters.push_back(new Cluster(&data, l, r));
+        //clusters.push_back(new Cluster(&data, l, r));
+        Cluster *tmp = new Cluster(&data, l, r);
+        NNChain.push_back(tmp);
+        clusters.insert(std::pair<int, Cluster*>(tmp->GetID(), tmp));
     }
 
 
@@ -120,27 +179,19 @@ void Agnes::Fit(double *arr, int rows, int cols) {
 
 void Agnes::GetLabels(int *out, int n) {
 
-    std::unordered_set<int> **clustersets = new std::unordered_set<int>*[n_clusters];
-    if (clustersets == nullptr)
-        std::cerr << "Uh oh, nullptr" << std::endl;
-    for (int i = 0; i < n_clusters; i++) {
-        clustersets[i] = new std::unordered_set<int>(clusters[i]->GetPoints()->begin(), clusters[i]->GetPoints()->end());
-        if (clustersets[i] == nullptr)
-            std::cerr << "Uh oh, another nullptr" << std::endl;
-    }
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n_clusters; j++) {
-            if (clustersets[j]->count(i) > 0) {
-                out[i] = j;
-                break;
-            }
+    std::map<int, int> *clustermap = new std::map<int, int>(); 
+    int clust_num = 0;
+    for (std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++, clust_num++) {
+        std::vector<int> *pts = it->second->GetPoints();
+        for (int i = 0; i < pts->size(); i++) {
+            clustermap->insert(std::pair<int, int>(pts->at(i), clust_num));
         }
     }
 
-    for (int i = 0; i < n_clusters; i++) {
-        delete clustersets[i];
+
+    for (int i = 0; i < n; i++) {
+        out[i] = clustermap->find(i)->second;
     }
-    delete clustersets;
 
 }
 
@@ -153,6 +204,7 @@ void Agnes::PrintRow(int n) {
 Agnes::Cluster::Cluster(std::vector<std::vector<double> > *data, int point) {
     this->data = data;
     datapoints.push_back(point);
+    id = id_counter++;
 }
 
 std::vector<int> *Agnes::Cluster::GetPoints() {
@@ -168,14 +220,19 @@ Agnes::Cluster::Cluster(std::vector<std::vector<double> > *data, Cluster *l, Clu
     
     left = l;
     right = r;
+    id = id_counter++;
+}
+
+int Agnes::Cluster::GetID() {
+    return id;
 }
 
 
-double Agnes::Cluster::Distance(Cluster other, std::vector<std::vector<double> > *distmatrix) {
+double Agnes::Cluster::Distance(Cluster *other, std::vector<std::vector<double> > *distmatrix) {
     double min = 1 << 30;
     for (unsigned int i = 0; i < datapoints.size(); i++) {
-        for (unsigned int j = 0; j < other.datapoints.size(); j++) {
-            double d = distmatrix->at(datapoints[i])[other.datapoints[j]];
+        for (unsigned int j = 0; j < other->datapoints.size(); j++) {
+            double d = distmatrix->at(datapoints[i])[other->datapoints[j]];
             if (d < min) 
                 min = d;
         }
