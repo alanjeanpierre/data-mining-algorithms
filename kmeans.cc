@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include "numpy_helper.h"
 #include <cmath>
+#include <map>
 
 // helper function for comparing doubles
 bool withinTolerance(double a, double b, double t = 0.01);
@@ -102,7 +103,7 @@ void KMeans::Fit(double *invec, int n, int m) {
         #ifdef _DEBUG
         std::cerr << "Iteration #" << iter << std::endl;
         #endif
-        
+
         diff = false;
         // calculate centroids
         for (int i = 0; i < n_clusters; i++) {
@@ -197,7 +198,18 @@ int KMeans::Predict(double *row, int n) {
 }
 
 void KMeans::GetLabels(int *out, int n) {
-    ;
+    std::map<int, int> *clustermap = new std::map<int, int>(); 
+    int clust_num = 0;
+    for (int i = 0; i < n_clusters; i++) {
+        std::vector<int> *pts = clusters[i].GetPoints();
+        for (int j = 0; j < pts->size(); j++) {
+            clustermap->insert(std::pair<int, int>(pts->at(j), i));
+        }
+    }
+
+    for (int i = 0; i < n; i++) {
+        out[i] = clustermap->find(i)->second;
+    }
 }
 
 
