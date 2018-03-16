@@ -11,6 +11,6 @@
 %}
 
 %apply(double* IN_ARRAY2, int DIM1, int DIM2) {(double *arr, int rows, int cols)}
-%apply(double* ARGOUT_ARRAY1, int DIM1) {(double *out, int n)}
+%apply(int* ARGOUT_ARRAY1, int DIM1) {(int *out, int n)}
 
 %include "agnes.h"

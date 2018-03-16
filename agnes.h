@@ -35,7 +35,7 @@ public:
 
     Agnes(int n);
     void Fit(double *arr, int rows, int cols);
-    void GetLabels(double *out, int n);
+    void GetLabels(int *out, int n);
 };
 
 #endif

@@ -96,7 +96,7 @@ void Agnes::Fit(double *arr, int rows, int cols) {
 
 }
 
-void Agnes::GetLabels(double *out, int n) {
+void Agnes::GetLabels(int *out, int n) {
 
     std::unordered_set<int> **clustersets = new std::unordered_set<int>*[n_clusters];
     if (clustersets == nullptr)
