@@ -16,7 +16,7 @@ private:
         public:
             Cluster(std::vector<std::vector<double> > *data, int point);
             Cluster(std::vector<std::vector<double> > *data, Cluster *l, Cluster *r);
-            double Distance(Cluster other);
+            double Distance(Cluster other, std::vector<std::vector<double> > *distmatrix);
             std::vector<int> *GetPoints();
             void PrintCluster();
 

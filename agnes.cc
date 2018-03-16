@@ -22,9 +22,10 @@ void Agnes::Fit(double *arr, int rows, int cols) {
     std::cerr << "Fitting with " << rows << " x " << cols << " points " << std::endl;
 #endif
 
-    //std::vector<std::vector<double> > adjmatrix;
-    //adjmatrix.resize(rows);
+    std::vector<std::vector<double> > *distmatrix = new std::vector<std::vector<double> >();
+    distmatrix->resize(rows);
     clusters.resize(rows);
+
     // build initial single value clusters
     double *d = arr;
     for (int i = 0; i < rows; i++) {
@@ -55,7 +56,19 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         d += i*n_attributes;
 
         // initialize ith row of adjmatrix
-        //adjmatrix[i].resize(rows);
+        distmatrix->at(i).resize(rows);
+    }
+
+
+    // precompute point-point distance
+    for (int i = 0; i < rows; i++) {
+        //adjmatrix[i][i] = 1 << 30; // maybe use some max double?
+        for (int j = 0; j < i; j++) {
+            //std::cerr << "Comparing cluster " << i << " against cluster " << j << std::endl;
+            double t = Cluster::MinkowskiDist(data[i], data[j], 2);  
+            distmatrix->at(i)[j] = t;
+            distmatrix->at(j)[i] = t;
+        }
     }
 
     #ifdef _DEBUG
@@ -72,7 +85,7 @@ void Agnes::Fit(double *arr, int rows, int cols) {
             //adjmatrix[i][i] = 1 << 30; // maybe use some max double?
             for (unsigned int j = 0; j < i; j++) {
                 //std::cerr << "Comparing cluster " << i << " against cluster " << j << std::endl;
-                double t = clusters[i]->Distance(*clusters[j]);  
+                double t = clusters[i]->Distance(*clusters[j], distmatrix);
 
                 //std::cerr << "Dist = " << t << std::endl << std::endl;
                 if (t < min) {
@@ -158,11 +171,11 @@ Agnes::Cluster::Cluster(std::vector<std::vector<double> > *data, Cluster *l, Clu
 }
 
 
-double Agnes::Cluster::Distance(Cluster other) {
+double Agnes::Cluster::Distance(Cluster other, std::vector<std::vector<double> > *distmatrix) {
     double min = 1 << 30;
     for (unsigned int i = 0; i < datapoints.size(); i++) {
         for (unsigned int j = 0; j < other.datapoints.size(); j++) {
-            double d = MinkowskiDist(data->at(datapoints[i]), data->at(other.datapoints[j]), 2);
+            double d = distmatrix->at(datapoints[i])[other.datapoints[j]];
             if (d < min) 
                 min = d;
         }
