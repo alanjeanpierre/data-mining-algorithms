@@ -21,7 +21,7 @@ print('sklearns centroids:')
 print(skk.cluster_centers_)
 
 print('fitting c++ cluster')
-k.fit(a)
+k.Fit(a)
 
 print('trying to get clusters using invalid array')
 clusters = np.ndarray((1,9), dtype=float)
