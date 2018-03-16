@@ -16,7 +16,7 @@ def test_simple_single():
     impl.Fit(data)
 
     r_labels = ref.labels_
-    i_labels = np.array([impl.Predict(label) for label in data])
+    i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 1) == True
 
@@ -30,7 +30,7 @@ def test_simple_dual():
     impl.Fit(data)
 
     r_labels = ref.labels_
-    i_labels = np.array([impl.Predict(label) for label in data])
+    i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 2) == True
 
@@ -44,7 +44,7 @@ def test_duplicate_dual():
     impl.Fit(data)
 
     r_labels = ref.labels_
-    i_labels = np.array([impl.Predict(label) for label in data])
+    i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 2) == True
 
@@ -54,6 +54,6 @@ def test_clear_blobs():
     
     impl = kmeans.KMeans(2, max_iter, rstate)
     impl.Fit(data)
-    i_labels = np.array([impl.Predict(label) for label in data])
+    i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 2) == True

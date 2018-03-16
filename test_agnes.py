@@ -11,7 +11,7 @@ def test_simple_single():
     impl.Fit(data)
 
     r_labels = np.array([0])
-    i_labels = impl.GetLabels(data.size)
+    i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 1) == True
 
@@ -23,7 +23,7 @@ def test_simple_dual():
     impl.Fit(data)
 
     r_labels = np.array([0,1])
-    i_labels = impl.GetLabels(data.size)
+    i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 2) == True
 
@@ -35,7 +35,7 @@ def test_duplicate_dual():
     impl.Fit(data)
 
     r_labels = np.array([0,0,0,0,0,0,0,1,1,1,1,1,1,1])
-    i_labels = impl.GetLabels(data.size)
+    i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 2) == True
 
@@ -46,7 +46,7 @@ def test_clear_blobs():
     impl = agnes.Agnes(2)
 
     impl.Fit(data)
-    i_labels = impl.GetLabels(data.size)
+    i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 2) == True
 
@@ -55,7 +55,7 @@ def test_large():
 
     impl = agnes.Agnes(1)
     impl.Fit(data)
-    i_labels = impl.GetLabels(data.size)
+    i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 1) == True
     
