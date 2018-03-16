@@ -43,8 +43,8 @@ class KMeans {
 
     public:
         KMeans(int n_clusters=8, int max_iter=300, int random_state=-1);
-        void fit(double *invec, int n, int m);
-        int predict(double *row, int n);
+        void Fit(double *invec, int n, int m);
+        int Predict(double *row, int n);
         void GetClusters(double *arr, int rows, int cols);
 
 };

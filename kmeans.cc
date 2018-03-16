@@ -26,7 +26,7 @@ KMeans::KMeans(int n_clusters, int max_iter, int random_state) {
         this->rand_seed = random_state;
 }
 
-void KMeans::fit(double *invec, int n, int m) {
+void KMeans::Fit(double *invec, int n, int m) {
     
     std::srand(rand_seed);
     n_attributes = m;
@@ -108,7 +108,7 @@ void KMeans::GetClusters(double *arr, int rows, int cols) {
     }
 }
 
-int KMeans::predict(double *row, int n) {
+int KMeans::Predict(double *row, int n) {
     return NearestCluster(row, n);
 }
 
