@@ -18,7 +18,9 @@ Agnes::Agnes(int n) {
 void Agnes::Fit(double *arr, int rows, int cols) {
     n_attributes = cols;
 
-    //std::cerr << "Fitting with " << rows << " x " << cols << " points " << std::endl;
+#ifdef _DEBUG
+    std::cerr << "Fitting with " << rows << " x " << cols << " points " << std::endl;
+#endif
 
     //std::vector<std::vector<double> > adjmatrix;
     //adjmatrix.resize(rows);
@@ -27,13 +29,21 @@ void Agnes::Fit(double *arr, int rows, int cols) {
     double *d = arr;
     for (int i = 0; i < rows; i++) {
         std::vector<double> t;
-        //std::cerr << "Adding row " << i << ", val: ";
+        
+        #ifdef _DEBUG
+        std::cerr << "Adding row " << i << ", val: ";
+        #endif
         for (int j = 0; j < n_attributes; j++) {
             // add values to row
             t.push_back(arr[index(n_attributes, i, j)]);
-            //std::cerr << arr[index(n_attributes, i, j)] << " ";
+            #ifdef _DEBUG
+            std::cerr << arr[index(n_attributes, i, j)] << " ";
+            #endif
         }
-        //std::cerr << std::endl;
+        
+        #ifdef _DEBUG
+        std::cerr << std::endl;
+        #endif 
         // add row to table
         data.push_back(t);
         //PrintRow(i);
@@ -48,8 +58,13 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         //adjmatrix[i].resize(rows);
     }
 
-    //int iter = 1;
+    #ifdef _DEBUG
+    int iter = 1;
+    #endif
     while(clusters.size() > (unsigned int)n_clusters) {
+        #ifdef _DEBUG
+        std::cerr << "Iteration " << iter++ << std::endl;
+        #endif
         double min = 1 << 30;
         int min_i = 0;
         int min_j = 0;
@@ -75,22 +90,16 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         clusters[min_j] = clusters.back();
         clusters.pop_back();
 
-        //std::cerr << "Printing merged clusters" << std::endl;
-        //l->PrintCluster();
-        //r->PrintCluster();
+        #ifdef _DEBUG
+        std::cerr << "Merging clusters " << min_i << " and " << min_j << std::endl;
+        l->PrintCluster();
+        std::cerr << std::endl;
+        r->PrintCluster();
+        std::cerr << std::endl;
+        #endif
+        
 
         clusters.push_back(new Cluster(&data, l, r));
-/*
-        std::cerr << "\nIteration " << iter++ << std::endl;
-        for (unsigned int i = 0; i < clusters.size(); i++) {
-            std::vector<int> *p = clusters[i]->GetPoints();
-            std::cerr << "Cluster " << i << " contains x points: " << p->size() << std::endl;
-            for (unsigned int j = 0; j < p->size(); j++) 
-                PrintRow(p->at(j));
-            std::cerr << std::endl;
-        }
-        std::cerr << std::endl;
-*/
     }
 
 
