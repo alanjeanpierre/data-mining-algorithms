@@ -48,14 +48,14 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         //adjmatrix[i].resize(rows);
     }
 
-    int iter = 1;
-    while(clusters.size() > n_clusters) {
+    //int iter = 1;
+    while(clusters.size() > (unsigned int)n_clusters) {
         double min = 1 << 30;
         int min_i = 0;
         int min_j = 0;
-        for (int i = 0; i < clusters.size(); i++) {
+        for (unsigned int i = 0; i < clusters.size(); i++) {
             //adjmatrix[i][i] = 1 << 30; // maybe use some max double?
-            for (int j = 0; j < i; j++) {
+            for (unsigned int j = 0; j < i; j++) {
                 //std::cerr << "Comparing cluster " << i << " against cluster " << j << std::endl;
                 double t = clusters[i]->Distance(*clusters[j]);  
 
@@ -175,8 +175,8 @@ double Agnes::Cluster::MinkowskiDist(std::vector<double> c1, std::vector<double>
 }
 
 void Agnes::Cluster::PrintCluster() {
-    for (int i = 0; i < datapoints.size(); i++) {
-        for (int j = 0; j < data->at(datapoints[i]).size(); j++) {
+    for (unsigned int i = 0; i < datapoints.size(); i++) {
+        for (unsigned int j = 0; j < data->at(datapoints[i]).size(); j++) {
             std::cerr << data->at(datapoints[i])[j] << " ";
         }
         std::cerr << std::endl;
