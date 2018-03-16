@@ -13,7 +13,6 @@ class KMeans {
             int n_points;
             std::vector<double> centroid;
             std::vector<int> points;
-            //double *data;
             std::vector<std::vector<double> > *data;
             int rows;
             int columns;
