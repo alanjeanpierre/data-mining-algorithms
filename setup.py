@@ -7,7 +7,7 @@ setup.py file for SWIG c++ files
 import os
 
 debug = None
-if os.environ.get("DEBUG", 0) == 1:
+if os.environ.get("DEBUG", '0') == '1':
     debug = [('_DEBUG', 1),]
 
 from distutils.core import setup, Extension
