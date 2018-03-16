@@ -31,9 +31,30 @@ void KMeans::Fit(double *invec, int n, int m) {
     std::srand(rand_seed);
     n_attributes = m;
     
+    // copy data to internal data structure
+    data = new std::vector<std::vector<double> >();
+    for (int i = 0; i < n; i++) {
+        double *d = invec + i*n_attributes;
+        #ifdef _DEBUG
+        std::cerr << "Point " << i << ": <";
+        #endif
+        std::vector<double> t;
+        for (int j = 0; j < n_attributes; j++) {
+            t.push_back(d[j]);
+            #ifdef _DEBUG
+            std::cerr << d[j] << ",";
+            #endif
+        }
+
+        #ifdef _DEBUG
+        std::cerr << ">" << std::endl;
+        #endif
+        data->push_back(t);
+    }
+
     // allocate clusters
     for (int i = 0; i < n_clusters; i++)
-        clusters.push_back(Cluster(invec, n, n_attributes));
+        clusters.push_back(Cluster(data, n, n_attributes));
     
     int i;
 
@@ -41,6 +62,9 @@ void KMeans::Fit(double *invec, int n, int m) {
     // this is to ensure there are AT LEAST n_clusters
     // and aren't randomly assigned to the same one
     for (i = 0; i < n_clusters; i++) {
+        #ifdef _DEBUG
+        std::cerr << "Deterministically assigning point " << i << " to cluster " << i << std::endl;
+        #endif
         clusters[i].AddPoint(i);
     }
 
@@ -49,17 +73,47 @@ void KMeans::Fit(double *invec, int n, int m) {
     for (; i < n; i++) {
         int centroid = std::rand()%n_clusters;
         clusters[centroid].AddPoint(i);
+        #ifdef _DEBUG
+        std::cerr << "Randomly assigning point " << i << " to cluster " << centroid << std::endl;
+        #endif
     }
+
+    #ifdef _DEBUG
+    for (int i = 0; i < n_clusters; i++) {
+        std::cerr << "Points in Cluster #" << i << std::endl;
+        std::vector<int> *pts = clusters[i].GetPoints();
+        for (int j = 0; j < pts->size(); j++) {
+            std::cerr << "<";
+            for (int k = 0; k < n_attributes; k++) {
+                std::cerr << data->at(pts->at(j))[k] << ",";
+            }
+            std::cerr << ">" << std::endl;
+        }
+        std::cerr << std::endl;
+    }
+    #endif
     
     // run until no change in clusters
     bool diff = true;
-    
+    #ifdef _DEBUG
+    int iter = 1;
+    #endif
     for (int runs = 0; diff && runs < max_iter; runs++) {
+        #ifdef _DEBUG
+        std::cerr << "Iteration #" << iter << std::endl;
+        #endif
         
         diff = false;
         // calculate centroids
         for (int i = 0; i < n_clusters; i++) {
             diff |= clusters[i].CalcCentroid();
+            #ifdef _DEBUG
+            std::cerr << "New centroid for cluster " << i << " is: <";
+            std::vector<double> c = clusters[i].GetCentroid();
+            for (int i = 0; i < n_attributes; i++)
+                std::cerr << c[i] << ", ";
+            std::cerr << ">" << std::endl;
+            #endif
         }
         
         //if (!diff)
@@ -68,20 +122,37 @@ void KMeans::Fit(double *invec, int n, int m) {
         for (int i = 0; i < n_clusters; i++)
             clusters[i].ResetPoints();
         
-        double *d;
         // reassign points
         for (int i = 0; i < n; i++) {
-            d = invec + i * n_attributes;
-           int minindex = NearestCluster(d, n_attributes);
+            std::vector<double> *d = &(data->at(i));
+            int minindex = NearestCluster(d);
             clusters[minindex].AddPoint(i);   
+            #ifdef _DEBUG
+            std::cerr << "Adding point " << i << " to cluster " << minindex << std::endl;
+            #endif
         }
+
+        #ifdef _DEBUG
+        for (int i = 0; i < n_clusters; i++) {
+            std::cerr << "Points in Cluster #" << i << std::endl;
+            std::vector<int> *pts = clusters[i].GetPoints();
+            for (int j = 0; j < pts->size(); j++) {
+                std::cerr << "<";
+                for (int k = 0; k < n_attributes; k++) {
+                    std::cerr << data->at(pts->at(j))[k] << ",";
+                }
+                std::cerr << ">" << std::endl;
+            }
+            std::cerr << std::endl;
+        }
+        #endif
     }   
 }
 
-int KMeans::NearestCluster(double *row, int n) {
+int KMeans::NearestCluster(std::vector<double> *datapoint) {
 
-    if (n != n_attributes) {
-        std::cerr << "Error: num input attributes (" << n 
+    if (datapoint->size() != n_attributes) {
+        std::cerr << "Error: num input attributes (" << datapoint->size()
                   << ") doesn't match num cluster attributes (" 
                   << n_attributes << ")" << std::endl;
         return 0;
@@ -91,7 +162,7 @@ int KMeans::NearestCluster(double *row, int n) {
     double mindist = 1 << 30; // hsould set to some max double?
     int minindex = 0;
     for (int c = 0; c < n_clusters; c++) {
-        double dist = clusters[c].MinkowskiDist(row, n);
+        double dist = clusters[c].MinkowskiDist(datapoint, 2);
         if (dist < mindist) {
             mindist = dist;
             minindex = c;
@@ -119,11 +190,18 @@ void KMeans::GetClusters(double *arr, int rows, int cols) {
 }
 
 int KMeans::Predict(double *row, int n) {
-    return NearestCluster(row, n);
+    std::vector<double> d;
+    for (int i = 0; i < n; i++)
+        d.push_back(row[i]);
+    return NearestCluster(&d);
+}
+
+void KMeans::GetLabels(int *out, int n) {
+    ;
 }
 
 
-KMeans::Cluster::Cluster(double *data, int rows, int columns) {
+KMeans::Cluster::Cluster(std::vector<std::vector<double> > *data, int rows, int columns) {
     this->data = data;
     this->rows = rows;
     this->columns = columns;
@@ -158,35 +236,30 @@ bool KMeans::Cluster::CalcCentroid() {
     
     ResetCentroid();
     
-    // pointing d to the start of the nth row
-    double *d;
-    
     // sum points
     for (int i = 0; i < n_points; i++) {
-        d = data + points[i]*columns;     
-        for (int j = 0; j < columns; j++) {
-            centroid[j] += d[j];
+        for (int j = 0; j < n_attributes; j++) {
+            centroid[j] += data->at(points[i])[j];
         }
     }
     
     bool diff = false;
     // average
-    for (int i = 0; i < columns; i++) {
+    for (int i = 0; i < n_attributes; i++) {
         centroid[i] /= n_points;
         diff |= !withinTolerance(centroid[i], old[i], 0.1);
     }    
+
+    delete old;
     
     return diff;
 }
 
-double KMeans::Cluster::MinkowskiDist(double *d, int n) {
+double KMeans::Cluster::MinkowskiDist(std::vector<double> *datapoint, int n) {
     double s = 0;
-    
-    if (n != n_attributes)
-        return -1;
-    
+        
     for (int i = 0; i < n_attributes; i++) {
-        s += std::pow(std::abs(centroid[i]-d[i]), 1.0/n);
+        s += std::pow(std::abs(centroid[i]-datapoint->at(i)), 1.0/n);
     }
     
     return std::sqrt(s);
@@ -210,6 +283,10 @@ int KMeans::Cluster::GetNumAttrs() {
 
 std::vector<double> KMeans::Cluster::GetCentroid() {
     return centroid;
+}
+
+std::vector<int> *KMeans::Cluster::GetPoints() {
+    return &points; 
 }
 
 // helper function for comparing doubles
