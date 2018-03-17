@@ -57,3 +57,12 @@ def test_clear_blobs():
     i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 2) == True
+
+def test_large():
+    data, r_labels = datasets.make_blobs(n_samples=1000, centers=1)
+
+    impl = kmeans.KMeans(1, max_iter, rstate)
+    impl.Fit(data)
+    i_labels = impl.GetLabels(data.shape[0])
+
+    assert t.check_clusters(r_labels, i_labels, 1) == True

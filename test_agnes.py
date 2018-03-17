@@ -51,11 +51,10 @@ def test_clear_blobs():
     assert t.check_clusters(r_labels, i_labels, 2) == True
 
 def test_large():
-    data, r_labels = datasets.make_blobs(n_samples=2000, centers=1)
+    data, r_labels = datasets.make_blobs(n_samples=1000, centers=1)
 
     impl = agnes.Agnes(1, 'single')
     impl.Fit(data)
     i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 1) == True
-    
