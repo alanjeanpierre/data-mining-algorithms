@@ -119,28 +119,6 @@ void Agnes::Fit(double *arr, int rows, int cols) {
             continue;
         }
 
-        // else
-        
-
-        /*
-        double min = 1 << 30;
-        int min_i = 0;
-        int min_j = 0;
-        for (unsigned int i = 0; i < clusters.size(); i++) {
-            //adjmatrix[i][i] = 1 << 30; // maybe use some max double?
-            for (unsigned int j = 0; j < i; j++) {
-                //std::cerr << "Comparing cluster " << i << " against cluster " << j << std::endl;
-                double t = clusters[i]->Distance(*clusters[j], distmatrix);
-
-                //std::cerr << "Dist = " << t << std::endl << std::endl;
-                if (t < min) {
-                    min = t;
-                    min_i = i;
-                    min_j = j;
-                }
-            }
-        }
-        */
         Cluster *l = NNChain.back();
         NNChain.pop_back();
         Cluster *r = NNChain.back();
@@ -148,16 +126,6 @@ void Agnes::Fit(double *arr, int rows, int cols) {
 
         clusters.erase(l->GetID());
         clusters.erase(r->GetID());
-
-
-        /*
-        Cluster *l = clusters[min_i];
-        Cluster *r = clusters[min_j];
-        clusters[min_i] = clusters.back();
-        clusters.pop_back();
-        clusters[min_j] = clusters.back();
-        clusters.pop_back();
-        */
 
         #ifdef _DEBUG
         std::cerr << "Merging clusters " << l->GetID() << " and " << r->GetID() << std::endl;
@@ -167,8 +135,6 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         std::cerr << std::endl;
         #endif
         
-
-        //clusters.push_back(new Cluster(&data, l, r));
         Cluster *tmp = new Cluster(&data, l, r);
         NNChain.push_back(tmp);
         clusters.insert(std::pair<int, Cluster*>(tmp->GetID(), tmp));
