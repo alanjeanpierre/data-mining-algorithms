@@ -24,6 +24,7 @@ private:
             std::vector<int> *GetPoints();
             void PrintCluster();
             int GetID();
+            void PrintDotGraph();
 
             
             static double MinkowskiDist(std::vector<double> c1, std::vector<double> c2, int n);
@@ -41,6 +42,7 @@ public:
     Agnes(int n, char* alg);
     void Fit(double *arr, int rows, int cols);
     void GetLabels(int *out, int n);
+    void PrintDotGraph(char* args=NULL);
 };
 
 #endif

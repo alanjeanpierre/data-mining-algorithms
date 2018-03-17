@@ -7,7 +7,7 @@
 #include <map>
 #include <algorithm>
 
-static int id_counter;
+static int id_counter = 0;
 
 static double (*Linkage)(double, double, double);
 
@@ -195,6 +195,8 @@ Agnes::Cluster::Cluster(std::vector<std::vector<double> > *data, int point) {
     this->data = data;
     datapoints.push_back(point);
     id = id_counter++;
+    left = NULL;
+    right = NULL;
 }
 
 std::vector<int> *Agnes::Cluster::GetPoints() {
@@ -257,5 +259,37 @@ void Agnes::Cluster::PrintCluster() {
             std::cerr << data->at(datapoints[i])[j] << " ";
         }
         std::cerr << std::endl;
+    }
+}
+
+void Agnes::PrintDotGraph(char* args) {
+    std::cout << "digraph G {" << std::endl;
+
+    if (args)
+        std::cout << args << std::endl;
+
+    for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
+        std::cout << "root -> " << it->first << ";" << std::endl;
+        it->second->PrintDotGraph(); 
+    }
+
+    std::cout << "{rank = max; ";
+    for (int i = 0; i < data.size(); i++) {
+        std::cout << i << "; ";
+    }
+    std::cout << "}" << std::endl;
+
+    std::cout << "}" << std::endl;
+}
+
+void Agnes::Cluster::PrintDotGraph() {
+    if (left) {
+        std::cout << GetID() << " -> " << left->GetID() << ";" << std::endl;
+        left->PrintDotGraph();
+    }
+    if (right) {
+        std::cout << GetID() << " -> " << right->GetID() << ";" << std::endl;
+        right->PrintDotGraph();
+
     }
 }
