@@ -5,6 +5,8 @@
 #include <map>
 
 
+
+
 class Agnes {
 
 private:
@@ -18,9 +20,7 @@ private:
         public:
             Cluster(std::vector<std::vector<double> > *data, int point);
             Cluster(std::vector<std::vector<double> > *data, Cluster *l, Cluster *r);
-            double SingleLink(Cluster *other, std::vector<std::vector<double> > *distmatrix);
-            double CompleteLink(Cluster *other, std::vector<std::vector<double> > *distmatrix);
-            double AverageLink(Cluster *other, std::vector<std::vector<double> > *distmatrix);
+            double Distance(Cluster *other, std::vector<std::vector<double> > *distmatrix);
             std::vector<int> *GetPoints();
             void PrintCluster();
             int GetID();
@@ -35,9 +35,6 @@ private:
     std::string algorithm;
     std::map<int, Cluster*> clusters;
     void PrintRow(int n);
-    void FitSingleLink(std::vector<std::vector<double> > *distmatrix);
-    void FitCompleteLink(std::vector<std::vector<double> > *distmatrix);
-    void FitAverageLink(std::vector<std::vector<double> > *distmatrix);    
 
 public:
 
