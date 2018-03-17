@@ -6,7 +6,7 @@ import test_helper as t
 
 def test_simple_single():
     data = np.array([[1, 1],])
-    impl = agnes.Agnes(1)
+    impl = agnes.Agnes(1, 'single')
 
     impl.Fit(data)
 
@@ -18,7 +18,7 @@ def test_simple_single():
 def test_simple_dual():
     data = np.array([[1, 1],
                      [-1, -1]])
-    impl = agnes.Agnes(2)
+    impl = agnes.Agnes(2, 'single')
 
     impl.Fit(data)
 
@@ -30,7 +30,7 @@ def test_simple_dual():
 def test_duplicate_dual():
     data = np.array([[1,1], [1,1], [1,1], [1,1], [1,1], [1,1], [1,1], 
                     [-1,-1], [-1,-1], [-1,-1], [-1,-1], [-1,-1], [-1,-1], [-1,-1], ])
-    impl = agnes.Agnes(2)
+    impl = agnes.Agnes(2, 'single')
 
     impl.Fit(data)
 
@@ -43,7 +43,7 @@ def test_clear_blobs():
     centers = ((-5, -5), (5, 5))
     data, r_labels = datasets.make_blobs(n_samples=100, centers=centers)
     
-    impl = agnes.Agnes(2)
+    impl = agnes.Agnes(2, 'single')
 
     impl.Fit(data)
     i_labels = impl.GetLabels(data.shape[0])
@@ -53,7 +53,7 @@ def test_clear_blobs():
 def test_large():
     data, r_labels = datasets.make_blobs(n_samples=2000, centers=1)
 
-    impl = agnes.Agnes(1)
+    impl = agnes.Agnes(1, 'single')
     impl.Fit(data)
     i_labels = impl.GetLabels(data.shape[0])
 

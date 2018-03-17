@@ -9,7 +9,7 @@
 
 static int id_counter;
 
-Agnes::Agnes(int n) {
+Agnes::Agnes(int n, char* alg) {
 
     if (n < 1) {
         n = 1;
@@ -17,6 +17,7 @@ Agnes::Agnes(int n) {
     }
 
     n_clusters = n;
+    algorithm = std::string(alg);
 }
 
 void Agnes::Fit(double *arr, int rows, int cols) {
@@ -77,6 +78,20 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         }
     }
 
+    if (algorithm.compare("single") == 0)
+        FitSingleLink(distmatrix);
+    else if (algorithm.compare("complete") == 0)
+        FitCompleteLink(distmatrix);
+    else if(algorithm.compare("average") == 0)
+        FitAverageLink(distmatrix);
+    else {
+        std::cerr << "Error: invalid algorithm " << algorithm << ", defaulting to single link" << std::endl;
+        FitSingleLink(distmatrix);
+    }
+
+}
+
+void Agnes::FitSingleLink(std::vector<std::vector<double> > *distmatrix) {
     std::vector<Cluster*> NNChain;
 
     #ifdef _DEBUG
@@ -96,7 +111,7 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
             if (active_cluster->GetID() == it->second->GetID())
                 continue;
-            double t = active_cluster->Distance(it->second, distmatrix);
+            double t = active_cluster->SingleLink(it->second, distmatrix);
             #ifdef _DEBUG
                 std::cerr << "Distance: " << active_cluster->GetID() << ":" << it->second->GetID() << " = " << t << std::endl;
             #endif
@@ -139,8 +154,136 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         NNChain.push_back(tmp);
         clusters.insert(std::pair<int, Cluster*>(tmp->GetID(), tmp));
     }
+}
 
+void Agnes::FitCompleteLink(std::vector<std::vector<double> > *distmatrix) {
+    std::vector<Cluster*> NNChain;
 
+    #ifdef _DEBUG
+    int iter = 1;
+    #endif
+    while(clusters.size() > (unsigned int)n_clusters) {
+        #ifdef _DEBUG
+        std::cerr << "Iteration " << iter++ << std::endl;
+        #endif
+
+        if (NNChain.size() == 0)
+            NNChain.push_back(clusters.begin()->second);
+
+        Cluster *active_cluster = NNChain.back();
+        Cluster *next_nearest;
+        double min = 1 << 30;
+        for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
+            if (active_cluster->GetID() == it->second->GetID())
+                continue;
+            double t = active_cluster->CompleteLink(it->second, distmatrix);
+            #ifdef _DEBUG
+                std::cerr << "Distance: " << active_cluster->GetID() << ":" << it->second->GetID() << " = " << t << std::endl;
+            #endif
+            if (t < min) {
+                min = t;
+                next_nearest = it->second;
+            }
+        }
+
+        #ifdef _DEBUG
+        std::cerr << "Found nearest to " << active_cluster->GetID() << ": " <<next_nearest->GetID() << std::endl;
+        #endif
+
+        if (std::find(NNChain.begin(), NNChain.end(), next_nearest) == NNChain.end()) {
+            // stack does not contain next nearest
+            NNChain.push_back(next_nearest);
+            #ifdef _DEBUG
+            std::cerr << "Stack doesn't contain nearest" << std::endl;
+            #endif
+            continue;
+        }
+
+        Cluster *l = NNChain.back();
+        NNChain.pop_back();
+        Cluster *r = NNChain.back();
+        NNChain.pop_back();
+
+        clusters.erase(l->GetID());
+        clusters.erase(r->GetID());
+
+        #ifdef _DEBUG
+        std::cerr << "Merging clusters " << l->GetID() << " and " << r->GetID() << std::endl;
+        l->PrintCluster();
+        std::cerr << std::endl;
+        r->PrintCluster();
+        std::cerr << std::endl;
+        #endif
+        
+        Cluster *tmp = new Cluster(&data, l, r);
+        NNChain.push_back(tmp);
+        clusters.insert(std::pair<int, Cluster*>(tmp->GetID(), tmp));
+    }
+}
+
+void Agnes::FitAverageLink(std::vector<std::vector<double> > *distmatrix) {
+    std::vector<Cluster*> NNChain;
+
+    #ifdef _DEBUG
+    int iter = 1;
+    #endif
+    while(clusters.size() > (unsigned int)n_clusters) {
+        #ifdef _DEBUG
+        std::cerr << "Iteration " << iter++ << std::endl;
+        #endif
+
+        if (NNChain.size() == 0)
+            NNChain.push_back(clusters.begin()->second);
+
+        Cluster *active_cluster = NNChain.back();
+        Cluster *next_nearest;
+        double min = 1 << 30;
+        for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
+            if (active_cluster->GetID() == it->second->GetID())
+                continue;
+            double t = active_cluster->AverageLink(it->second, distmatrix);
+            #ifdef _DEBUG
+                std::cerr << "Distance: " << active_cluster->GetID() << ":" << it->second->GetID() << " = " << t << std::endl;
+            #endif
+            if (t < min) {
+                min = t;
+                next_nearest = it->second;
+            }
+        }
+
+        #ifdef _DEBUG
+        std::cerr << "Found nearest to " << active_cluster->GetID() << ": " <<next_nearest->GetID() << std::endl;
+        #endif
+
+        if (std::find(NNChain.begin(), NNChain.end(), next_nearest) == NNChain.end()) {
+            // stack does not contain next nearest
+            NNChain.push_back(next_nearest);
+            #ifdef _DEBUG
+            std::cerr << "Stack doesn't contain nearest" << std::endl;
+            #endif
+            continue;
+        }
+
+        Cluster *l = NNChain.back();
+        NNChain.pop_back();
+        Cluster *r = NNChain.back();
+        NNChain.pop_back();
+
+        clusters.erase(l->GetID());
+        clusters.erase(r->GetID());
+
+        #ifdef _DEBUG
+        std::cerr << "Merging clusters " << l->GetID() << " and " << r->GetID() << std::endl;
+        l->PrintCluster();
+        std::cerr << std::endl;
+        r->PrintCluster();
+        std::cerr << std::endl;
+        #endif
+        
+        Cluster *tmp = new Cluster(&data, l, r);
+        NNChain.push_back(tmp);
+        clusters.insert(std::pair<int, Cluster*>(tmp->GetID(), tmp));
+    }
 }
 
 void Agnes::GetLabels(int *out, int n) {
@@ -194,7 +337,7 @@ int Agnes::Cluster::GetID() {
 }
 
 
-double Agnes::Cluster::Distance(Cluster *other, std::vector<std::vector<double> > *distmatrix) {
+double Agnes::Cluster::SingleLink(Cluster *other, std::vector<std::vector<double> > *distmatrix) {
     double min = 1 << 30;
     for (unsigned int i = 0; i < datapoints.size(); i++) {
         for (unsigned int j = 0; j < other->datapoints.size(); j++) {
@@ -205,8 +348,32 @@ double Agnes::Cluster::Distance(Cluster *other, std::vector<std::vector<double> 
     }
 
     return min;
+}
 
-    
+
+double Agnes::Cluster::CompleteLink(Cluster *other, std::vector<std::vector<double> > *distmatrix) {
+    double max = 0;
+    for (unsigned int i = 0; i < datapoints.size(); i++) {
+        for (unsigned int j = 0; j < other->datapoints.size(); j++) {
+            double d = distmatrix->at(datapoints[i])[other->datapoints[j]];
+            if (d > max) 
+                max = d;
+        }
+    }
+
+    return max;
+}
+
+double Agnes::Cluster::AverageLink(Cluster *other, std::vector<std::vector<double> > *distmatrix) {
+    double s = 0;
+    int n = datapoints.size() * other->datapoints.size();
+    for (unsigned int i = 0; i < datapoints.size(); i++) {
+        for (unsigned int j = 0; j < other->datapoints.size(); j++) {
+            s += distmatrix->at(datapoints[i])[other->datapoints[j]];
+        }
+    }
+
+    return s/n;
 }
 
 
