@@ -10,7 +10,7 @@ debug = None
 if os.environ.get("DEBUG", '0') == '1':
     debug = [('_DEBUG', 1),]
 
-args = ['-std=c++11']
+args = ['-std=c++11', '-O2']
 if sys.platform == 'darwin':
     args.append('-stdlib=libc++')
 
