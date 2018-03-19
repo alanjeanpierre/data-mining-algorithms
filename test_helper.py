@@ -24,3 +24,10 @@ def check_clusters(ref, impls, n_clusters):
     m = build_k_by_k_matrix(ref, impls, n_clusters)
     nonzero = np.count_nonzero(m, axis=0)
     return np.array_equal(nonzero, np.ones(nonzero.size))
+
+def check_clusters_with_allowance(ref, impls, n_clusters, percentage_err):
+    m = build_k_by_k_matrix(ref, impls, n_clusters)
+    mins = [row.min() for row in m]
+    if (max(mins) == 0):
+        return True
+    return ref.size/max(mins) < percentage_err
