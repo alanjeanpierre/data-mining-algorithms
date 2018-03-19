@@ -14,6 +14,24 @@ Border Cluster -- the cluster has less than minPoints in or touching it
 Oulier Cluster -- not inside border/core cluster
 */
 
-void dbscan::dbscan(int eps, int minPoints, double * arr){	
+DBSCAN::DBSCAN(int eps, int minPoints){	
 	
 }
+
+void DBSCAN::Fit(double * arr, int rows, int cols){
+	n_attributes = cols;
+	n_datapoints = rows;
+	
+}
+
+std::vector<int> * DBSCAN::DensityReach(int index){
+
+}
+
+bool DBSCAN::isCoreObject(int index){
+
+}
+
+void DBSCAN::GetLabels(int * out, int n){
+
+} 
