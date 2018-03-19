@@ -100,7 +100,7 @@ void Agnes::PrecomputeDistances() {
 }
 
 Agnes::Cluster *Agnes::NextNearest(Cluster *active_cluster) {
-    Cluster *next_nearest = clusters.begin()->second;
+    Cluster *next_nearest = clusters.end()->second;
     double min = 1 << 30;
     for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
         if (active_cluster->GetID() == it->second->GetID())
@@ -177,12 +177,14 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         std::cerr << std::endl;
         #endif
         
-        // push merged cluster onto stack and cluster list
+        // don't push merged cluster onto stack,
+        // just add to cluster list
         Cluster *tmp = new Cluster(&data, l, r);
-        NNChain.push_back(tmp);
+        //NNChain.push_back(tmp);
         clusters.insert(std::pair<int, Cluster*>(tmp->GetID(), tmp));
     }
     delete distmatrix;
+    id_counter = 0;
 }
 
 void Agnes::GetLabels(int *out, int n) {
