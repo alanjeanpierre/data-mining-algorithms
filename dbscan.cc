@@ -6,6 +6,14 @@
 #include <map>
 #include <algorithm>
 
-void dbscan::dbscan(int eps, int minPoints, double * arr){
+/*
+Core Cluster -- if the cluster has more than minPoints in or touching it
 
+Border Cluster -- the cluster has less than minPoints in or touching it
+
+Oulier Cluster -- not inside border/core cluster
+*/
+
+void dbscan::dbscan(int eps, int minPoints, double * arr){	
+	
 }
