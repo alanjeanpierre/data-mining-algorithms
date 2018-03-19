@@ -138,6 +138,7 @@ void KMeans::Fit(double *invec, int n, int m) {
 
         #ifdef _DEBUG
         PrintClusters();
+        iter++;
         #endif
     }   
 }
@@ -232,6 +233,8 @@ void KMeans::Cluster::AddPoint(int row) {
 
 bool KMeans::Cluster::CalcCentroid() {
     
+    if (n_points == 0)
+        return false;
     
     double *old = new double[n_attributes];
     for (int i = 0; i < n_attributes; i++)
