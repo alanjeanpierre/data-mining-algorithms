@@ -267,12 +267,12 @@ bool KMeans::Cluster::CalcCentroid() {
 
 double KMeans::Cluster::MinkowskiDist(std::vector<double> *datapoint, int n) {
     double s = 0;
-        
+    
     for (int i = 0; i < n_attributes; i++) {
-        s += std::pow(std::abs(centroid[i]-datapoint->at(i)), 1.0/n);
+        s += std::pow(std::abs(centroid[i]-datapoint->at(i)), n);
     }
     
-    return std::sqrt(s);
+    return std::pow(s, 1.0/n);
 }
 
 void KMeans::Cluster::PrintCentroid() {
