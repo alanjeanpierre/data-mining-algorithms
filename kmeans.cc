@@ -54,7 +54,7 @@ void KMeans::PrintClusters() {
     for (int i = 0; i < n_clusters; i++) {
         std::cerr << "Points in Cluster #" << i << std::endl;
         std::vector<int> *pts = clusters[i].GetPoints();
-        for (int j = 0; j < pts->size(); j++) {
+        for (unsigned int j = 0; j < pts->size(); j++) {
             std::cerr << "<";
             for (int k = 0; k < n_attributes; k++) {
                 std::cerr << data->at(pts->at(j))[k] << ",";
@@ -144,7 +144,7 @@ void KMeans::Fit(double *invec, int n, int m) {
 
 int KMeans::NearestCluster(std::vector<double> *datapoint) {
 
-    if (datapoint->size() != n_attributes) {
+    if (datapoint->size() != (unsigned int)n_attributes) {
         std::cerr << "Error: num input attributes (" << datapoint->size()
                   << ") doesn't match num cluster attributes (" 
                   << n_attributes << ")" << std::endl;
@@ -191,10 +191,9 @@ int KMeans::Predict(double *row, int n) {
 
 void KMeans::GetLabels(int *out, int n) {
     std::map<int, int> *clustermap = new std::map<int, int>(); 
-    int clust_num = 0;
     for (int i = 0; i < n_clusters; i++) {
         std::vector<int> *pts = clusters[i].GetPoints();
-        for (int j = 0; j < pts->size(); j++) {
+        for (unsigned int j = 0; j < pts->size(); j++) {
             clustermap->insert(std::pair<int, int>(pts->at(j), i));
         }
     }

@@ -31,11 +31,16 @@ private:
     };  
 
     std::vector<std::vector<double> > data;
+    std::vector<std::vector<double> > *distmatrix;
     int n_clusters;
     int n_attributes;
+    int n_datapoints;
     std::string algorithm;
     std::map<int, Cluster*> clusters;
     void PrintRow(int n);
+    void InitDataStructures(double *arr, int rows, int cols);
+    void PrecomputeDistances();
+    Cluster *NextNearest(Cluster *active_cluster);
 
 public:
 

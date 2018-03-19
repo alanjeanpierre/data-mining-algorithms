@@ -45,16 +45,10 @@ Agnes::Agnes(int n, char* alg) {
     }
 }
 
-void Agnes::Fit(double *arr, int rows, int cols) {
-    n_attributes = cols;
+void Agnes::InitDataStructures(double *arr, int rows, int cols) {
 
-#ifdef _DEBUG
-    std::cerr << "Fitting with " << rows << " x " << cols << " points " << std::endl;
-#endif
-
-    std::vector<std::vector<double> > *distmatrix = new std::vector<std::vector<double> >();
+    distmatrix = new std::vector<std::vector<double> >();
     distmatrix->resize(rows);
-    //clusters.resize(rows);
 
     // build initial single value clusters
     double *d = arr;
@@ -90,10 +84,11 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         // initialize ith row of adjmatrix
         distmatrix->at(i).resize(rows);
     }
+}
 
-
+void Agnes::PrecomputeDistances() {
     // precompute point-point distance
-    for (int i = 0; i < rows; i++) {
+    for (int i = 0; i < n_datapoints; i++) {
         //adjmatrix[i][i] = 1 << 30; // maybe use some max double?
         for (int j = 0; j < i; j++) {
             //std::cerr << "Comparing cluster " << i << " against cluster " << j << std::endl;
@@ -102,8 +97,39 @@ void Agnes::Fit(double *arr, int rows, int cols) {
             distmatrix->at(j)[i] = t;
         }
     }
+}
 
-        std::vector<Cluster*> NNChain;
+Agnes::Cluster *Agnes::NextNearest(Cluster *active_cluster) {
+    Cluster *next_nearest = clusters.end()->second;
+    double min = 1 << 30;
+    for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
+        if (active_cluster->GetID() == it->second->GetID())
+            continue;
+        double t = active_cluster->Distance(it->second, distmatrix);
+        #ifdef _DEBUG
+            std::cerr << "Distance: " << active_cluster->GetID() << ":" << it->second->GetID() << " = " << t << std::endl;
+        #endif
+        if (t < min) {
+            min = t;
+            next_nearest = it->second;
+        }
+    }
+
+    return next_nearest;
+}
+
+void Agnes::Fit(double *arr, int rows, int cols) {
+    n_attributes = cols;
+    n_datapoints = rows;
+
+    #ifdef _DEBUG
+        std::cerr << "Fitting with " << rows << " x " << cols << " points " << std::endl;
+    #endif
+
+    InitDataStructures(arr, rows, cols);
+    PrecomputeDistances();
+
+    std::vector<Cluster*> NNChain;
 
     #ifdef _DEBUG
     int iter = 1;
@@ -117,20 +143,8 @@ void Agnes::Fit(double *arr, int rows, int cols) {
             NNChain.push_back(clusters.begin()->second);
 
         Cluster *active_cluster = NNChain.back();
-        Cluster *next_nearest;
-        double min = 1 << 30;
-        for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
-            if (active_cluster->GetID() == it->second->GetID())
-                continue;
-            double t = active_cluster->Distance(it->second, distmatrix);
-            #ifdef _DEBUG
-                std::cerr << "Distance: " << active_cluster->GetID() << ":" << it->second->GetID() << " = " << t << std::endl;
-            #endif
-            if (t < min) {
-                min = t;
-                next_nearest = it->second;
-            }
-        }
+        Cluster *next_nearest = NextNearest(active_cluster);
+        
 
         #ifdef _DEBUG
         std::cerr << "Found nearest to " << active_cluster->GetID() << ": " <<next_nearest->GetID() << std::endl;
@@ -145,11 +159,13 @@ void Agnes::Fit(double *arr, int rows, int cols) {
             continue;
         }
 
+        // Remove top 2 nearest clusters from stack
         Cluster *l = NNChain.back();
         NNChain.pop_back();
         Cluster *r = NNChain.back();
         NNChain.pop_back();
 
+        // remove clusters from cluster list
         clusters.erase(l->GetID());
         clusters.erase(r->GetID());
 
@@ -161,19 +177,23 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         std::cerr << std::endl;
         #endif
         
+        // don't push merged cluster onto stack,
+        // just add to cluster list
         Cluster *tmp = new Cluster(&data, l, r);
-        NNChain.push_back(tmp);
+        //NNChain.push_back(tmp);
         clusters.insert(std::pair<int, Cluster*>(tmp->GetID(), tmp));
     }
+    delete distmatrix;
+    id_counter = 0;
 }
 
 void Agnes::GetLabels(int *out, int n) {
 
-    std::map<int, int> *clustermap = new std::map<int, int>(); 
     int clust_num = 0;
+    std::map<int, int> *clustermap = new std::map<int, int>(); 
     for (std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++, clust_num++) {
         std::vector<int> *pts = it->second->GetPoints();
-        for (int i = 0; i < pts->size(); i++) {
+        for (unsigned int i = 0; i < pts->size(); i++) {
             clustermap->insert(std::pair<int, int>(pts->at(i), clust_num));
         }
     }
@@ -274,7 +294,7 @@ void Agnes::PrintDotGraph(char* args) {
     }
 
     std::cout << "{rank = max; ";
-    for (int i = 0; i < data.size(); i++) {
+    for (unsigned int i = 0; i < data.size(); i++) {
         std::cout << i << "; ";
     }
     std::cout << "}" << std::endl;
