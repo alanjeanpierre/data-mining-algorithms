@@ -21,6 +21,7 @@ private:
 
 public:
 	DBSCAN(int eps, int minPoints);
+	~DBSCAN();
 	void Fit(double * arr, int rows, int cols);
 	void GetLabels(int * out, int n); 
 };

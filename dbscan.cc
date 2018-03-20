@@ -22,13 +22,17 @@ DBSCAN::DBSCAN(int eps, int minPoints){
 	
 }
 
+DBSCAN::~DBSCAN() {
+	delete data;
+}
+
 void DBSCAN::CopyData(double *arr, int rows, int cols) {
 	for (int i = 0; i < rows; i++) {
-		std::vector<double> *t = new std::vector<double>();
+		std::vector<double> t(cols); 
 		for (int j = 0; j < cols; j++) {
-			t->push_back(arr[index(cols, i, j)]);
+			t[j] = arr[index(cols, i, j)];
 		}
-		data->push_back(*t);
+		data->push_back(t);
 	}
 }
 

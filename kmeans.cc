@@ -27,6 +27,10 @@ KMeans::KMeans(int n_clusters, int max_iter, int random_state) {
         this->rand_seed = random_state;
 }
 
+KMeans::~KMeans() {
+    delete data;
+}
+
 void KMeans::CopyData(double *invec, int n, int m) {
     data = new std::vector<std::vector<double> >();
     for (int i = 0; i < n; i++) {

@@ -32,35 +32,57 @@ Agnes::Agnes(int n, char* alg) {
     }
 
     n_clusters = n;
-    algorithm = std::string(alg);
-    if (algorithm.compare("single") == 0)
-        Linkage = SingleLinkDistance;
-    else if (algorithm.compare("complete") == 0)
-        Linkage = CompleteLinkDistance;
-    else if(algorithm.compare("average") == 0)
-        Linkage = AverageLinkDistance;
-    else {
-        std::cerr << "Error: invalid algorithm " << algorithm << ", defaulting to single link" << std::endl;
+    
+    distmatrix = new std::vector<std::vector<double> >();
+    data = new std::vector<std::vector<double> >();
+    if (alg) {
+        algorithm = std::string(alg);
+        if (algorithm.compare("single") == 0)
+            Linkage = SingleLinkDistance;
+        else if (algorithm.compare("complete") == 0)
+            Linkage = CompleteLinkDistance;
+        else if(algorithm.compare("average") == 0)
+            Linkage = AverageLinkDistance;
+        else {
+            std::cerr << "Error: invalid algorithm " << algorithm << ", defaulting to single link" << std::endl;
+            Linkage = SingleLinkDistance;
+        }
+    } else {
+        algorithm = std::string("single");
         Linkage = SingleLinkDistance;
     }
+    
+}
+
+Agnes::~Agnes() {
+    for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
+        delete it->second;
+        it->second = NULL;
+        clusters.erase(it->first);
+    }
+    delete data;
+    delete distmatrix;
+    data = NULL;
+    distmatrix = NULL;
 }
 
 void Agnes::InitDataStructures(double *arr, int rows, int cols) {
 
-    distmatrix = new std::vector<std::vector<double> >();
     distmatrix->resize(rows);
+
+    data->resize(rows);
 
     // build initial single value clusters
     double *d = arr;
     for (int i = 0; i < rows; i++) {
-        std::vector<double> t;
+        std::vector<double> t(cols, 0);
         
         #ifdef _DEBUG
         std::cerr << "Adding row " << i << ", val: ";
         #endif
         for (int j = 0; j < n_attributes; j++) {
             // add values to row
-            t.push_back(arr[index(n_attributes, i, j)]);
+            t[j] = arr[index(n_attributes, i, j)];
             #ifdef _DEBUG
             std::cerr << arr[index(n_attributes, i, j)] << " ";
             #endif
@@ -70,11 +92,11 @@ void Agnes::InitDataStructures(double *arr, int rows, int cols) {
         std::cerr << std::endl;
         #endif 
         // add row to table
-        data.push_back(t);
+        data->at(i) = t;
         //PrintRow(i);
 
         // initialize single clusters
-        Cluster *tmp = new Cluster(&data, i);
+        Cluster *tmp = new Cluster(data, i);
 
         clusters.insert(std::pair<int, Cluster*>(tmp->GetID(), tmp));
         
@@ -92,7 +114,7 @@ void Agnes::PrecomputeDistances() {
         //adjmatrix[i][i] = 1 << 30; // maybe use some max double?
         for (int j = 0; j < i; j++) {
             //std::cerr << "Comparing cluster " << i << " against cluster " << j << std::endl;
-            double t = Cluster::MinkowskiDist(data[i], data[j], 2);  
+            double t = Cluster::MinkowskiDist(data->at(i), data->at(j), 2);  
             distmatrix->at(i)[j] = t;
             distmatrix->at(j)[i] = t;
         }
@@ -179,11 +201,10 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         
         // don't push merged cluster onto stack,
         // just add to cluster list
-        Cluster *tmp = new Cluster(&data, l, r);
+        Cluster *tmp = new Cluster(data, l, r);
         //NNChain.push_back(tmp);
         clusters.insert(std::pair<int, Cluster*>(tmp->GetID(), tmp));
     }
-    delete distmatrix;
     id_counter = 0;
 }
 
@@ -206,8 +227,8 @@ void Agnes::GetLabels(int *out, int n) {
 }
 
 void Agnes::PrintRow(int n) {
-    for (unsigned int i = 0; i < data[n].size(); i++)
-        std::cerr << data[n][i] << " ";
+    for (unsigned int i = 0; i < data->at(n).size(); i++)
+        std::cerr << data->at(n)[i] << " ";
     std::cerr << std::endl;
 }
 
@@ -294,7 +315,7 @@ void Agnes::PrintDotGraph(char* args) {
     }
 
     std::cout << "{rank = max; ";
-    for (unsigned int i = 0; i < data.size(); i++) {
+    for (unsigned int i = 0; i < data->size(); i++) {
         std::cout << i << "; ";
     }
     std::cout << "}" << std::endl;
