@@ -93,7 +93,6 @@ void Agnes::InitDataStructures(double *arr, int rows, int cols) {
         #endif 
         // add row to table
         data->at(i) = t;
-        //PrintRow(i);
 
         // initialize single clusters
         Cluster *tmp = new Cluster(data, i);
@@ -111,9 +110,7 @@ void Agnes::InitDataStructures(double *arr, int rows, int cols) {
 void Agnes::PrecomputeDistances() {
     // precompute point-point distance
     for (int i = 0; i < n_datapoints; i++) {
-        //adjmatrix[i][i] = 1 << 30; // maybe use some max double?
         for (int j = 0; j < i; j++) {
-            //std::cerr << "Comparing cluster " << i << " against cluster " << j << std::endl;
             double t = Cluster::MinkowskiDist(data->at(i), data->at(j), 2);  
             distmatrix->at(i)[j] = t;
             distmatrix->at(j)[i] = t;
@@ -202,7 +199,6 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         // don't push merged cluster onto stack,
         // just add to cluster list
         Cluster *tmp = new Cluster(data, l, r);
-        //NNChain.push_back(tmp);
         clusters.insert(std::pair<int, Cluster*>(tmp->GetID(), tmp));
     }
     id_counter = 0;
@@ -280,10 +276,6 @@ double Agnes::Cluster::Distance(Cluster *other, std::vector<std::vector<double> 
     return Linkage(min, max, avg/n);
 }
 
-
-// should precompte this for the whole table
-// instead of running each time
-// it's literally O(k*n^5) right now with a huge constant too because of fp and division
 double Agnes::Cluster::MinkowskiDist(std::vector<double> c1, std::vector<double> c2, int n) {
     double s = 0;
 
