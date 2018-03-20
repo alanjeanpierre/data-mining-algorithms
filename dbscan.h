@@ -7,6 +7,7 @@
 class DBSCAN {
 
 private:
+	void CopyData(double *arr, int rows, int cols);
 	bool isCoreObject(int index);
 	std::vector<int> * DensityReach(int index);
 	std::vector<std::vector<double> > * data;

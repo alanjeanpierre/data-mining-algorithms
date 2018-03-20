@@ -15,12 +15,29 @@ Oulier Cluster -- not inside border/core cluster
 */
 
 DBSCAN::DBSCAN(int eps, int minPoints){	
+	radius = eps;
+	minPts = minPoints;
+
+	data = new std::vector<std::vector<double> >();
 	
+}
+
+void DBSCAN::CopyData(double *arr, int rows, int cols) {
+	for (int i = 0; i < rows; i++) {
+		std::vector<double> *t = new std::vector<double>();
+		for (int j = 0; j < cols; j++) {
+			t->push_back(arr[index(cols, i, j)]);
+		}
+		data->push_back(*t);
+	}
 }
 
 void DBSCAN::Fit(double * arr, int rows, int cols){
 	n_attributes = cols;
 	n_datapoints = rows;
+
+	// copy data to internal data structure
+	CopyData(arr, rows, cols);
 	
 }
 
