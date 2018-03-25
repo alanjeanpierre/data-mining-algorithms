@@ -7,11 +7,14 @@
 class DBSCAN {
 
 private:
-	bool isCoreObject(int index);
+	bool isCoreObject(double point);
 	std::vector<int> * DensityReach(int index);
 	std::vector<std::vector<double> > * data;
 	std::vector<std::vector<double> > * distmatrix;
 	std::vector<bool> * classified;
+	std::vector<double> * core;
+	std::vector<double> * border;
+	std::vector<double> * outlier;
 	int radius;
 	int minPts;
 	int n_clusters;
