@@ -27,6 +27,10 @@ KMeans::KMeans(int n_clusters, int max_iter, int random_state) {
         this->rand_seed = random_state;
 }
 
+KMeans::~KMeans() {
+    delete data;
+}
+
 void KMeans::CopyData(double *invec, int n, int m) {
     data = new std::vector<std::vector<double> >();
     for (int i = 0; i < n; i++) {
@@ -138,6 +142,7 @@ void KMeans::Fit(double *invec, int n, int m) {
 
         #ifdef _DEBUG
         PrintClusters();
+        iter++;
         #endif
     }   
 }
@@ -232,6 +237,8 @@ void KMeans::Cluster::AddPoint(int row) {
 
 bool KMeans::Cluster::CalcCentroid() {
     
+    if (n_points == 0)
+        return false;
     
     double *old = new double[n_attributes];
     for (int i = 0; i < n_attributes; i++)

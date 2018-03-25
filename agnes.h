@@ -30,7 +30,7 @@ private:
             static double MinkowskiDist(std::vector<double> c1, std::vector<double> c2, int n);
     };  
 
-    std::vector<std::vector<double> > data;
+    std::vector<std::vector<double> > *data;
     std::vector<std::vector<double> > *distmatrix;
     int n_clusters;
     int n_attributes;
@@ -45,6 +45,7 @@ private:
 public:
 
     Agnes(int n, char* alg);
+    ~Agnes();
     void Fit(double *arr, int rows, int cols);
     void GetLabels(int *out, int n);
     void PrintDotGraph(char* args=NULL);

@@ -7,7 +7,12 @@
 class DBSCAN {
 
 private:
+<<<<<<< HEAD
 	bool isCoreObject(double point);
+=======
+	void CopyData(double *arr, int rows, int cols);
+	bool isCoreObject(int index);
+>>>>>>> 297505de8bb9469ca2c84f4b59920da72589019e
 	std::vector<int> * DensityReach(int index);
 	std::vector<std::vector<double> > * data;
 	std::vector<std::vector<double> > * distmatrix;
@@ -23,6 +28,7 @@ private:
 
 public:
 	DBSCAN(int eps, int minPoints);
+	~DBSCAN();
 	void Fit(double * arr, int rows, int cols);
 	void GetLabels(int * out, int n); 
 };
