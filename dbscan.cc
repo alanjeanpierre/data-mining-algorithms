@@ -53,8 +53,20 @@ void DBSCAN::Fit(double * arr, int rows, int cols){
 	
 }
 
+/*
+Point 'p' is density reachable from point 'q' if point 'p' is within eps distance from 'q' and 
+'q' has minPoints in its neighbors within distance eps
+*/
 std::vector<int> * DBSCAN::DensityReach(int index){
 
+}
+
+/*
+Find the neighboorhood of a point and return it in a vector
+*/
+std::vector<int> * DBSCAN::Neighborhood(int index){
+	std::std::vector<int> neighbors;
+	
 }
 
 /*
@@ -63,6 +75,21 @@ Check to see if a certain point is inside of a core cluster
 bool DBSCAN::isCoreObject(double point){
 	return std::find(core.begin(), core.end(), point) != core.end();
 }
+
+/*
+Check to see if a certain point is inside of a border cluster
+*/
+bool DBSCAN::isBorderObject(double point){
+	return std::find(border.begin(), border.end(), point) != border.end();
+}
+
+/*
+Check to see if a certain point is inside of a outlier cluster
+*/
+bool isOutlierObject(double point){
+	return std::find(outlier.begin(), outlier.end(), point) != outlier.end();
+}
+
 
 void DBSCAN::GetLabels(int * out, int n){
 

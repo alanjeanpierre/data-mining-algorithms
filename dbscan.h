@@ -7,12 +7,12 @@
 class DBSCAN {
 
 private:
-<<<<<<< HEAD
 	bool isCoreObject(double point);
-=======
+	bool isBorderObject(double point);
+	bool isOutlierObject(double point);
 	void CopyData(double *arr, int rows, int cols);
 	bool isCoreObject(int index);
->>>>>>> 297505de8bb9469ca2c84f4b59920da72589019e
+	std::std::vector<int> * Neighborhood(int index);
 	std::vector<int> * DensityReach(int index);
 	std::vector<std::vector<double> > * data;
 	std::vector<std::vector<double> > * distmatrix;
