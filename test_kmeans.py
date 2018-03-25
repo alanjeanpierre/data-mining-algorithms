@@ -75,9 +75,9 @@ def test_double_fit():
     impl = kmeans.KMeans(6)
     impl.Fit(data1)
 
-    t1 = t.check_clusters_with_allowance(r_labels1, impl.GetLabels(data1.shape[0]), 6, .1)
+    t1 = t.check_clusters_with_allowance(r_labels1, impl.GetLabels(data1.shape[0]), 6, .01)
     
     impl.Fit(data2)
-    t2 = t.check_clusters_with_allowance(r_labels2, impl.GetLabels(data2.shape[0]), 6, .1)
+    t2 = t.check_clusters_with_allowance(r_labels2, impl.GetLabels(data2.shape[0]), 6, .01)
 
     assert t1 == True and t2 == True

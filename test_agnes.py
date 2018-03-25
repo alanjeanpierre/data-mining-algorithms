@@ -56,7 +56,7 @@ def test_unclear_blobs():
     impl = agnes.Agnes(3, 'single')
     impl.Fit(data)
 
-    assert t.check_clusters_with_allowance(r_labels, impl.GetLabels(data.shape[0]), 3, .1) == True
+    assert t.check_clusters_with_allowance(r_labels, impl.GetLabels(data.shape[0]), 3, .01) == True
 
 def test_linkage():
     data, r_labels = datasets.make_blobs(n_samples=144)
@@ -69,9 +69,9 @@ def test_linkage():
     complete.Fit(data)
     average.Fit(data)
 
-    ts = t.check_clusters_with_allowance(r_labels, single.GetLabels(data.shape[0]), 3, .1)
-    tc = t.check_clusters_with_allowance(r_labels, complete.GetLabels(data.shape[0]), 3, .1)
-    ta = t.check_clusters_with_allowance(r_labels, average.GetLabels(data.shape[0]), 3, .1)
+    ts = t.check_clusters_with_allowance(r_labels, single.GetLabels(data.shape[0]), 3, .01)
+    tc = t.check_clusters_with_allowance(r_labels, complete.GetLabels(data.shape[0]), 3, .01)
+    ta = t.check_clusters_with_allowance(r_labels, average.GetLabels(data.shape[0]), 3, .01)
 
 
     assert ts == True and tc == True and ta == True
@@ -83,9 +83,9 @@ def test_double_fit():
     impl = agnes.Agnes(6, 'complete')
     impl.Fit(data1)
 
-    t1 = t.check_clusters_with_allowance(r_labels1, impl.GetLabels(data1.shape[0]), 6, .1)
+    t1 = t.check_clusters_with_allowance(r_labels1, impl.GetLabels(data1.shape[0]), 6, .01)
     
     impl.Fit(data2)
-    t2 = t.check_clusters_with_allowance(r_labels2, impl.GetLabels(data2.shape[0]), 6, .1)
+    t2 = t.check_clusters_with_allowance(r_labels2, impl.GetLabels(data2.shape[0]), 6, .01)
 
     assert t1 == True and t2 == True
