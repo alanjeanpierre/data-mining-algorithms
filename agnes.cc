@@ -58,8 +58,8 @@ Agnes::~Agnes() {
     for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
         delete it->second;
         it->second = NULL;
-        clusters.erase(it->first);
     }
+    clusters.clear();
     delete data;
     delete distmatrix;
     data = NULL;
@@ -71,6 +71,12 @@ void Agnes::InitDataStructures(double *arr, int rows, int cols) {
     distmatrix->resize(rows);
 
     data->resize(rows);
+
+    for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
+        delete it->second;
+        it->second = NULL;
+    }
+    clusters.clear();
 
     // build initial single value clusters
     double *d = arr;
