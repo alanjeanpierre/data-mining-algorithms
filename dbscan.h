@@ -4,33 +4,50 @@
 #include <vector>
 #include <map>
 
+#define NOISE -1
+#define UNCLASSIFIED -2
+
 class DBSCAN {
 
 private:
-	bool isCoreObject(double point); //may not be needed
-	bool isBorderObject(double point); //may not be needed
-	bool isOutlierObject(double point);
-	bool isClassified(double point);
+	class Point {
+	private:
+		int classification;
+		int id;
+		std::vector<Point*> *neighbors;
+
+	public:
+		Point(int id);
+		~Point();
+		int GetID() { return id; }
+		int GetClassification() { return classification; }
+		void SetClassification(int c) { classification = c; }
+		bool IsUnClassified() { return classification == UNCLASSIFIED; }
+		bool IsNoise() { return classification == NOISE; }
+		bool IsCorePoint(int minPts ) { return neighbors->size() >= minPts; }
+		std::vector<Point*> *RegionQuery() { return neighbors; }
+		void SetChildrenIDs(int id);
+		void AddNeighbor(Point *neighbor);
+	};
+
+
 	void CopyData(double *arr, int rows, int cols);
-	double Distance(int p, int q);
-	std::vector<double> * Neighborhood(double index);
-	std::vector<std::vector<double> > * data;
-	std::vector<std::vector<double> > * distmatrix;
-	std::vector<double> * classified;
-	std::vector<double> * neighborhood;
-	std::vector<double> * noise; //possible change to multimap
-	std::map<double, std::vector<double> > * core; //possible change to multimap
-	std::map<double, std::vector<double> > * border; //possible change to multimap
-	int radius;
+	void InitDataStructures();
+	bool ExpandCluster(Point* point, int ClId);
+	int NextID();
+
+	std::vector<Point*> *points;
+	double eps;
 	int minPts;
 	int n_clusters;
 	int n_attributes;
 	int n_datapoints;
+	std::vector<std::vector<double> > *data;
 
 public:
-	DBSCAN(int eps, int minPoints);
+	DBSCAN(double eps, int minPoints);
 	~DBSCAN();
-	void Fit(double * arr, int rows, int cols);
+	void Fit(double *arr, int rows, int cols);
 	void GetLabels(int * out, int n); 
 };
 
