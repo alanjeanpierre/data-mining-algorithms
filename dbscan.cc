@@ -112,6 +112,15 @@ void DBSCAN::InitDataStructures() {
 }
 
 void DBSCAN::Fit(double *arr, int rows, int cols){
+	/*
+	 * Let 
+	 * 		n = num points
+	 * 		r = num points in neighborhood 
+	 * 
+	 * r = O(n)
+	 * Fit = O(n^2)
+	 * 
+	 */
 	n_attributes = cols;
 	n_datapoints = rows;
 
@@ -120,14 +129,14 @@ void DBSCAN::Fit(double *arr, int rows, int cols){
 	#endif
 
 	// copy data to internal data structure
-	CopyData(arr, rows, cols);
-	InitDataStructures();
+	CopyData(arr, rows, cols); // O(n)
+	InitDataStructures(); // O(n^2)
 
 	int Clid = NextID();
-	for (int i = 0; i < n_datapoints; i++) {
+	for (int i = 0; i < n_datapoints; i++) { // O(n)
 		Point* p = points->at(i);
 		if (p->IsUnClassified()) {
-			if (ExpandCluster(p, Clid)) {
+			if (ExpandCluster(p, Clid)) { // O(r^2)
 				Clid = NextID();
 			}
 		}
@@ -135,7 +144,13 @@ void DBSCAN::Fit(double *arr, int rows, int cols){
 }
 
 bool DBSCAN::ExpandCluster(Point* point, int ClId) {
-
+	/*
+	 * Let 
+	 * 		n = num points
+	 * 		r = nearby points
+	 * 
+	 * ExpandCluster = O(r^2) ~= O(n^2)
+	 */
 	#ifdef _DEBUG
 	std::cerr << "Examining point #" << point->GetID() << ", class=" <<	point->GetClassification() << 
 	" numPts=" << point->RegionQuery()->size() <<  std::endl;
@@ -148,20 +163,20 @@ bool DBSCAN::ExpandCluster(Point* point, int ClId) {
 		return false;
 	}
 
-	std::vector<Point*> *seeds = point->RegionQuery();
+	std::vector<Point*> *seeds = point->RegionQuery(); // O(1)
 	point->SetClassification(ClId);
 	point->SetChildrenIDs(ClId);
-	while (seeds->size() > 0) {
+	while (seeds->size() > 0) { // O(r)
 		Point* currentP = seeds->front();
 
 		#ifdef _DEBUG	
 		std::cerr << "Examining child point #" << currentP->GetID() << ", class=" <<	currentP->GetClassification() << 
 		" numPts=" << currentP->RegionQuery()->size() <<  std::endl;
 		#endif
-		if (currentP->IsCorePoint(minPts)) {
+		if (currentP->IsCorePoint(minPts)) { // O(1)
 			
-			std::vector<Point*> *result = currentP->RegionQuery();
-			for (int i = 0; i < result->size(); i++) {
+			std::vector<Point*> *result = currentP->RegionQuery(); // O(1)
+			for (int i = 0; i < result->size(); i++) { // O(r)
 
 				Point *resultP = result->at(i);
 
