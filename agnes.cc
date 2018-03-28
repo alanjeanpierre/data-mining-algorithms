@@ -286,7 +286,7 @@ double Agnes::Cluster::MinkowskiDist(std::vector<double> c1, std::vector<double>
     double s = 0;
 
     for (unsigned int i = 0; i < c1.size(); i++) {
-        s += std::pow(std::abs(c1[i]-c2[i]), 1.0/n);
+        s += std::pow(std::abs(c1[i]-c2[i]), n);
     }
     
     return std::pow(s, 1.0/n);
