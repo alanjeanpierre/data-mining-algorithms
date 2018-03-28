@@ -24,7 +24,7 @@ private:
 		void SetClassification(int c) { classification = c; }
 		bool IsUnClassified() { return classification == UNCLASSIFIED; }
 		bool IsNoise() { return classification == NOISE; }
-		bool IsCorePoint(int minPts ) { return neighbors->size() >= minPts; }
+		bool IsCorePoint(int minPts ) { return neighbors->size() + 1 >= minPts; }
 		std::vector<Point*> *RegionQuery() { return neighbors; }
 		void SetChildrenIDs(int id);
 		void AddNeighbor(Point *neighbor);
