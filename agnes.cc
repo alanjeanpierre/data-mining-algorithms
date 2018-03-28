@@ -113,6 +113,7 @@ void Agnes::InitDataStructures(double *arr, int rows, int cols) {
     }
 }
 
+// theta(dn^2), n=n_cluster, d=n_attributes
 void Agnes::PrecomputeDistances() {
     // precompute point-point distance
     for (int i = 0; i < n_datapoints; i++) {
@@ -124,6 +125,7 @@ void Agnes::PrecomputeDistances() {
     }
 }
 
+// O(c)
 Agnes::Cluster *Agnes::NextNearest(Cluster *active_cluster) {
     Cluster *next_nearest = clusters.end()->second;
     double min = 1 << 30;
@@ -144,6 +146,14 @@ Agnes::Cluster *Agnes::NextNearest(Cluster *active_cluster) {
 }
 
 void Agnes::Fit(double *arr, int rows, int cols) {
+    /*
+     * Let:
+     *      n = num points
+     *      c = current num clusters
+     *      d = dimensionality of the data
+     * 
+     * Fit = O(dn^2)
+     */
     n_attributes = cols;
     n_datapoints = rows;
 
@@ -151,14 +161,18 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         std::cerr << "Fitting with " << rows << " x " << cols << " points " << std::endl;
     #endif
 
-    InitDataStructures(arr, rows, cols);
-    PrecomputeDistances();
+    InitDataStructures(arr, rows, cols); // O(n)
+    PrecomputeDistances();               // O(dn^2)
 
     std::vector<Cluster*> NNChain;
 
     #ifdef _DEBUG
     int iter = 1;
     #endif
+
+    // loop runs O(n) times with 2 O(c) computations per run
+    // since c = O(n)
+    // loop = O(n^2)
     while(clusters.size() > (unsigned int)n_clusters) {
         #ifdef _DEBUG
         std::cerr << "Iteration " << iter++ << std::endl;
@@ -168,13 +182,14 @@ void Agnes::Fit(double *arr, int rows, int cols) {
             NNChain.push_back(clusters.begin()->second);
 
         Cluster *active_cluster = NNChain.back();
-        Cluster *next_nearest = NextNearest(active_cluster);
+        Cluster *next_nearest = NextNearest(active_cluster); // O(c)
         
 
         #ifdef _DEBUG
         std::cerr << "Found nearest to " << active_cluster->GetID() << ": " <<next_nearest->GetID() << std::endl;
         #endif
 
+        // O(c)
         if (std::find(NNChain.begin(), NNChain.end(), next_nearest) == NNChain.end()) {
             // stack does not contain next nearest
             NNChain.push_back(next_nearest);

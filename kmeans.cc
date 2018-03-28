@@ -75,12 +75,21 @@ void KMeans::PrintClusters() {
 }
 
 void KMeans::Fit(double *invec, int n, int m) {
+    /*
+     * Let 
+     *      n = num points
+     *      k = num clusters
+     *      d = dimensionality of the data
+     *      i = num iterations 
+     * 
+     * Fit = O(kdni)
+     */
     
     std::srand(rand_seed);
     n_attributes = m;
     
     // copy data to internal data structure
-    CopyData(invec, n, m);
+    CopyData(invec, n, m);  // O(n)
 
     // allocate clusters
     for (int i = 0; i < n_clusters; i++)
@@ -100,7 +109,7 @@ void KMeans::Fit(double *invec, int n, int m) {
 
     // initial random assignment of remaining clusters
     // starting where prev assignment left off
-    for (; i < n; i++) {
+    for (; i < n; i++) { // O(n)
         int centroid = std::rand()%n_clusters;
         clusters[centroid].AddPoint(i);
         #ifdef _DEBUG
@@ -117,6 +126,8 @@ void KMeans::Fit(double *invec, int n, int m) {
     #ifdef _DEBUG
     int iter = 1;
     #endif
+    // O(i) iterations with O(n) and O(cdn) per iteration
+    // O(kdni)
     for (int runs = 0; diff && runs < max_iter; runs++) {
         #ifdef _DEBUG
         std::cerr << "Iteration #" << iter << std::endl;
@@ -124,20 +135,20 @@ void KMeans::Fit(double *invec, int n, int m) {
 
         diff = false;
         // calculate centroids
-        for (int i = 0; i < n_clusters; i++) {
+        for (int i = 0; i < n_clusters; i++) { // O(k) of O(n) = O(kn)
             #ifdef _DEBUG
             std::cerr << "New centroid for cluster #" << i << " <";
             #endif
-            diff |= clusters[i].CalcCentroid();
+            diff |= clusters[i].CalcCentroid(); // O(n)
         }
         
         for (int i = 0; i < n_clusters; i++)
             clusters[i].ResetPoints();
         
         // reassign points
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++) { // O(n) iterations of O(kd) each = O(cdn)
             std::vector<double> *d = &(data->at(i));
-            int minindex = NearestCluster(d);
+            int minindex = NearestCluster(d); // O(kd)
             clusters[minindex].AddPoint(i);   
             
             #ifdef _DEBUG
