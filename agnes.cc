@@ -126,7 +126,7 @@ void Agnes::PrecomputeDistances() {
 }
 
 // O(c)
-Agnes::Cluster *Agnes::NextNearest(Cluster *active_cluster) {
+Agnes::Cluster *Agnes::GetNextNearest(Cluster *active_cluster) {
     Cluster *next_nearest = clusters.end()->second;
     double min = 1 << 30;
     for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
@@ -145,6 +145,47 @@ Agnes::Cluster *Agnes::NextNearest(Cluster *active_cluster) {
     return next_nearest;
 }
 
+Agnes::Cluster *Agnes::GetActiveCluster() {
+
+    if (NNChain.size() == 0)
+        NNChain.push_back(clusters.begin()->second);
+
+    Cluster *active_cluster = NNChain.back();
+    return active_cluster;
+}
+
+bool Agnes::ClusterIsInChain(Cluster *next_nearest) {
+    // O(c)
+
+    return std::find(NNChain.begin(), NNChain.end(), next_nearest) == NNChain.end();
+
+}
+
+Agnes::Cluster *Agnes::MergeNearestClusters() {
+    // Remove top 2 nearest clusters from stack
+    Cluster *l = NNChain.back();
+    NNChain.pop_back();
+    Cluster *r = NNChain.back();
+    NNChain.pop_back();
+
+    // remove clusters from cluster list
+    clusters.erase(l->GetID());
+    clusters.erase(r->GetID());
+
+    #ifdef _DEBUG
+    std::cerr << "Merging clusters " << l->GetID() << " and " << r->GetID() << std::endl;
+    l->PrintCluster();
+    std::cerr << std::endl;
+    r->PrintCluster();
+    std::cerr << std::endl;
+    #endif
+    
+    // don't push merged cluster onto stack,
+    // just add to cluster list
+    Cluster *tmp = new Cluster(data, l, r);
+    return tmp;
+}
+
 void Agnes::Fit(double *arr, int rows, int cols) {
     /*
      * Let:
@@ -158,13 +199,11 @@ void Agnes::Fit(double *arr, int rows, int cols) {
     n_datapoints = rows;
 
     #ifdef _DEBUG
-        std::cerr << "Fitting with " << rows << " x " << cols << " points " << std::endl;
+    std::cerr << "Fitting with " << rows << " x " << cols << " points " << std::endl;
     #endif
 
     InitDataStructures(arr, rows, cols); // O(n)
     PrecomputeDistances();               // O(dn^2)
-
-    std::vector<Cluster*> NNChain;
 
     #ifdef _DEBUG
     int iter = 1;
@@ -178,49 +217,25 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         std::cerr << "Iteration " << iter++ << std::endl;
         #endif
 
-        if (NNChain.size() == 0)
-            NNChain.push_back(clusters.begin()->second);
-
-        Cluster *active_cluster = NNChain.back();
-        Cluster *next_nearest = NextNearest(active_cluster); // O(c)
+        Cluster *active_cluster = GetActiveCluster(); // O(1)
+        Cluster *next_nearest = GetNextNearest(active_cluster); // O(c)
         
 
         #ifdef _DEBUG
-        std::cerr << "Found nearest to " << active_cluster->GetID() << ": " <<next_nearest->GetID() << std::endl;
+        std::cerr << "Found nearest to " << active_cluster->GetID() << ": " << next_nearest->GetID() << std::endl;
         #endif
 
-        // O(c)
-        if (std::find(NNChain.begin(), NNChain.end(), next_nearest) == NNChain.end()) {
-            // stack does not contain next nearest
-            NNChain.push_back(next_nearest);
+        if (ClusterIsInChain(next_nearest)) {
             #ifdef _DEBUG
             std::cerr << "Stack doesn't contain nearest" << std::endl;
             #endif
+    
+            NNChain.push_back(next_nearest);
             continue;
         }
 
-        // Remove top 2 nearest clusters from stack
-        Cluster *l = NNChain.back();
-        NNChain.pop_back();
-        Cluster *r = NNChain.back();
-        NNChain.pop_back();
-
-        // remove clusters from cluster list
-        clusters.erase(l->GetID());
-        clusters.erase(r->GetID());
-
-        #ifdef _DEBUG
-        std::cerr << "Merging clusters " << l->GetID() << " and " << r->GetID() << std::endl;
-        l->PrintCluster();
-        std::cerr << std::endl;
-        r->PrintCluster();
-        std::cerr << std::endl;
-        #endif
-        
-        // don't push merged cluster onto stack,
-        // just add to cluster list
-        Cluster *tmp = new Cluster(data, l, r);
-        clusters.insert(std::pair<int, Cluster*>(tmp->GetID(), tmp));
+        Cluster *merged = MergeNearestClusters();
+        clusters.insert(std::pair<int, Cluster*>(merged->GetID(), merged));
     }
     id_counter = 0;
 }

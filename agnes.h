@@ -30,17 +30,26 @@ private:
             static double MinkowskiDist(std::vector<double> c1, std::vector<double> c2, int n);
     };  
 
-    std::vector<std::vector<double> > *data;
-    std::vector<std::vector<double> > *distmatrix;
-    int n_clusters;
-    int n_attributes;
-    int n_datapoints;
-    std::string algorithm;
-    std::map<int, Cluster*> clusters;
     void PrintRow(int n);
     void InitDataStructures(double *arr, int rows, int cols);
     void PrecomputeDistances();
-    Cluster *NextNearest(Cluster *active_cluster);
+
+    Cluster *GetNextNearest(Cluster *active_cluster);
+    Cluster *MergeNearestClusters();
+    Cluster *GetActiveCluster();
+
+    bool ClusterIsInChain(Cluster *next_nearest);
+
+    std::vector<std::vector<double> > *data;
+    std::vector<std::vector<double> > *distmatrix;
+    std::map<int, Cluster*> clusters;
+    std::vector<Cluster*> NNChain;
+
+    int n_clusters;
+    int n_attributes;
+    int n_datapoints;
+
+    std::string algorithm;
 
 public:
 
