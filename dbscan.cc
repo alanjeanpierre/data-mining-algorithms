@@ -155,7 +155,7 @@ bool DBSCAN::ExpandCluster(Point* point, int ClId) {
 		if (currentP->IsCorePoint(minPts)) { // O(1)
 			
 			std::vector<Point*> *result = currentP->RegionQuery(); // O(1)
-			for (int i = 0; i < result->size(); i++) { // O(r)
+			for (unsigned int i = 0; i < result->size(); i++) { // O(r)
 
 				Point *resultP = result->at(i);
 
@@ -204,7 +204,7 @@ void DBSCAN::Point::AddNeighbor(Point *neighbor) {
 }
 
 void DBSCAN::Point::SetChildrenIDs(int id) {
-	for (int i = 0; i < neighbors->size(); i++) {
+	for (unsigned int i = 0; i < neighbors->size(); i++) {
 		neighbors->at(i)->SetClassification(id);
 	}
 }
