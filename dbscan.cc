@@ -24,13 +24,9 @@ DBSCAN::DBSCAN(double eps, int minPoints){
 	this->eps = eps;
 	minPts = minPoints;
 
-	data = new std::vector<std::vector<double> >();
-	
 }
 
 DBSCAN::~DBSCAN() {
-	delete data;
-	data = NULL;
 	while(points->size() > 0) {
 		Point *p = points->back();
 		points->pop_back();
@@ -38,36 +34,17 @@ DBSCAN::~DBSCAN() {
 	}
 }
 
-void DBSCAN::CopyData(double *arr, int rows, int cols) {
-	for (int i = 0; i < rows; i++) {
-		#ifdef _DEBUG
-		std::cerr << "Adding row " << i << ", val: ";
-		#endif
-		std::vector<double> t(cols); 
-		for (int j = 0; j < cols; j++) {
-			#ifdef _DEBUG
-			std::cerr << arr[index(n_attributes, i, j)] << " ";
-			#endif
-			t[j] = arr[index(cols, i, j)];
-		}
-		data->push_back(t);
-		#ifdef _DEBUG
-		std::cerr << std::endl;
-		#endif
-	}
-}
-
-double MinkowskiDist(std::vector<double> c1, std::vector<double> c2, int n) {
+double MinkowskiDist(double *c1, double *c2, int cols, int n) {
     double s = 0;
 
-    for (unsigned int i = 0; i < c1.size(); i++) {
+    for (int i = 0; i < cols; i++) {
         s += std::pow(std::abs(c1[i]-c2[i]), n);
     }
     
     return std::pow(s, 1.0/n);
 }
 
-void DBSCAN::InitDataStructures() {
+void DBSCAN::InitDataStructures(double *arr, int rows, int cols) {
 
 	// initialize the Points
 	points = new std::vector<Point*>();
@@ -82,10 +59,13 @@ void DBSCAN::InitDataStructures() {
 	#endif
 	std::vector<std::vector<double> > distmatrix;
 	distmatrix.resize(n_datapoints);
+	double *d1, *d2;
 	for (int i = 0; i < n_datapoints; i++) {
+		d1 = arr + i*cols;
 		distmatrix[i].resize(n_datapoints);
         for (int j = 0; j < i; j++) {
-            double t = MinkowskiDist(data->at(i), data->at(j), 2);  
+			d2 = arr + j*cols;
+            double t = MinkowskiDist(d1, d2, cols, 2);  
             distmatrix[i][j] = t;
             distmatrix[j][i] = t;
         }
@@ -129,8 +109,7 @@ void DBSCAN::Fit(double *arr, int rows, int cols){
 	#endif
 
 	// copy data to internal data structure
-	CopyData(arr, rows, cols); // O(n)
-	InitDataStructures(); // O(n^2)
+	InitDataStructures(arr, rows, cols); // O(n^2)
 
 	int Clid = NextID();
 	for (int i = 0; i < n_datapoints; i++) { // O(n)

@@ -24,7 +24,6 @@ Agnes::Agnes(int n, char* alg) {
     n_clusters = n;
     
     distmatrix = new std::vector<std::vector<double> >();
-    data = new std::vector<std::vector<double> >();
     if (alg) {
         algorithm = std::string(alg);
         if (algorithm.compare("single") == 0)
@@ -49,9 +48,7 @@ Agnes::~Agnes() {
         it->second = NULL;
     }
     clusters.clear();
-    delete data;
     delete distmatrix;
-    data = NULL;
     distmatrix = NULL;
 }
 
@@ -59,7 +56,6 @@ void Agnes::InitDataStructures(double *arr, int rows, int cols) {
 
     distmatrix->resize(rows);
 
-    data->resize(rows);
 
     for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
         delete it->second;
@@ -86,11 +82,9 @@ void Agnes::InitDataStructures(double *arr, int rows, int cols) {
         #ifdef _DEBUG
         std::cerr << std::endl;
         #endif 
-        // add row to table
-        data->at(i) = t;
 
         // initialize single clusters
-        Cluster *tmp = factory->NewCluster(data, i);
+        Cluster *tmp = factory->NewCluster(i);
         
 
         clusters.insert(std::pair<int, Cluster*>(tmp->GetID(), tmp));
@@ -104,11 +98,14 @@ void Agnes::InitDataStructures(double *arr, int rows, int cols) {
 }
 
 // theta(dn^2), n=n_cluster, d=n_attributes
-void Agnes::PrecomputeDistances() {
+void Agnes::PrecomputeDistances(double *arr, int rows, int cols) {
     // precompute point-point distance
+    double *d1, *d2;
     for (int i = 0; i < n_datapoints; i++) {
+        d1 = arr + i*cols;
         for (int j = 0; j < i; j++) {
-            double t = Cluster::MinkowskiDist(data->at(i), data->at(j), 2);  
+            d2 = arr + j*cols;
+            double t = Cluster::MinkowskiDist(d1, d2, cols, 2);  
             distmatrix->at(i)[j] = t;
             distmatrix->at(j)[i] = t;
         }
@@ -164,15 +161,11 @@ Cluster *Agnes::MergeNearestClusters() {
 
     #ifdef _DEBUG
     std::cerr << "Merging clusters " << l->GetID() << " and " << r->GetID() << std::endl;
-    l->PrintCluster();
-    std::cerr << std::endl;
-    r->PrintCluster();
-    std::cerr << std::endl;
     #endif
     
     // don't push merged cluster onto stack,
     // just add to cluster list
-    Cluster *tmp = factory->NewCluster(data, l, r);
+    Cluster *tmp = factory->NewCluster(l, r);
     return tmp;
 }
 
@@ -193,7 +186,7 @@ void Agnes::Fit(double *arr, int rows, int cols) {
     #endif
 
     InitDataStructures(arr, rows, cols); // O(n)
-    PrecomputeDistances();               // O(dn^2)
+    PrecomputeDistances(arr, rows, cols);               // O(dn^2)
 
     #ifdef _DEBUG
     int iter = 1;
@@ -248,14 +241,7 @@ void Agnes::GetLabels(int *out, int n) {
 
 }
 
-void Agnes::PrintRow(int n) {
-    for (unsigned int i = 0; i < data->at(n).size(); i++)
-        std::cerr << data->at(n)[i] << " ";
-    std::cerr << std::endl;
-}
-
-Cluster::Cluster(std::vector<std::vector<double> > *data, int point) {
-    this->data = data;
+Cluster::Cluster(int point) {
     datapoints.push_back(point);
     id = id_counter++;
     left = NULL;
@@ -266,8 +252,7 @@ std::vector<int> *Cluster::GetPoints() {
     return &datapoints;
 }
 
-Cluster::Cluster(std::vector<std::vector<double> > *data, Cluster *l, Cluster *r) {
-    this->data = data;
+Cluster::Cluster(Cluster *l, Cluster *r) {
     if (l)
         datapoints.insert(datapoints.end(), l->datapoints.begin(), l->datapoints.end());
     if (r)
@@ -282,23 +267,14 @@ int Cluster::GetID() {
     return id;
 }
 
-double Cluster::MinkowskiDist(std::vector<double> c1, std::vector<double> c2, int n) {
+double Cluster::MinkowskiDist(double *c1, double *c2, int cols, int n) {
     double s = 0;
 
-    for (unsigned int i = 0; i < c1.size(); i++) {
+    for (int i = 0; i < cols; i++) {
         s += std::pow(std::abs(c1[i]-c2[i]), n);
     }
     
     return std::pow(s, 1.0/n);
-}
-
-void Cluster::PrintCluster() {
-    for (unsigned int i = 0; i < datapoints.size(); i++) {
-        for (unsigned int j = 0; j < data->at(datapoints[i]).size(); j++) {
-            std::cerr << data->at(datapoints[i])[j] << " ";
-        }
-        std::cerr << std::endl;
-    }
 }
 
 void Agnes::PrintDotGraph(char* args) {
@@ -313,7 +289,7 @@ void Agnes::PrintDotGraph(char* args) {
     }
 
     std::cout << "{rank = max; ";
-    for (unsigned int i = 0; i < data->size(); i++) {
+    for (int i = 0; i < n_datapoints; i++) {
         std::cout << i << "; ";
     }
     std::cout << "}" << std::endl;

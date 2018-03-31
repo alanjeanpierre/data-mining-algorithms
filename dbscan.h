@@ -31,8 +31,6 @@ private:
 	};
 
 
-	void CopyData(double *arr, int rows, int cols);
-	void InitDataStructures();
 	bool ExpandCluster(Point* point, int ClId);
 	int NextID();
 
@@ -42,7 +40,6 @@ private:
 	int n_clusters;
 	int n_attributes;
 	int n_datapoints;
-	std::vector<std::vector<double> > *data;
 
 public:
 	DBSCAN(double eps, int minPoints);
