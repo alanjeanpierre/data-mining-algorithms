@@ -7,48 +7,42 @@ import test_helper as t
 max_iter = 300
 rstate = 31
 
-def test_simple_single():
+def test_simple_single_kmeans():
     data = np.array([[1, 1],])
-    ref = cluster.KMeans(1, random_state=rstate)
     impl = kmeans.KMeans(1, max_iter, rstate)
 
-    ref.fit(data)
     impl.Fit(data)
 
-    r_labels = ref.labels_
+    r_labels = np.array([0])
     i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 1) == True
 
-def test_simple_dual():
+def test_simple_dual_kmeans():
     data = np.array([[1, 1],
                      [-1, -1]])
-    ref = cluster.KMeans(2, random_state=rstate)
     impl = kmeans.KMeans(2, max_iter, rstate)
 
-    ref.fit(data)
     impl.Fit(data)
 
-    r_labels = ref.labels_
+    r_labels = np.array([0,1])
     i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 2) == True
 
-def test_duplicate_dual():
+def test_duplicate_dual_kmeans():
     data = np.array([[1,1], [1,1], [1,1], [1,1], [1,1], [1,1], [1,1], 
                     [-1,-1], [-1,-1], [-1,-1], [-1,-1], [-1,-1], [-1,-1], [-1,-1], ])
-    ref = cluster.KMeans(2, random_state=rstate)
     impl = kmeans.KMeans(2, max_iter, rstate)
 
-    ref.fit(data)
     impl.Fit(data)
 
-    r_labels = ref.labels_
+    r_labels = np.array([0,0,0,0,0,0,0,1,1,1,1,1,1,1])
     i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 2) == True
 
-def test_clear_blobs():
+def test_clear_blobs_kmeans():
     centers = ((-5, -5), (5, 5))
     data, r_labels = datasets.make_blobs(n_samples=100, centers=centers)
     
@@ -58,7 +52,7 @@ def test_clear_blobs():
 
     assert t.check_clusters(r_labels, i_labels, 2) == True
 
-def test_large():
+def test_large_kmeans():
     data, r_labels = datasets.make_blobs(n_samples=1000, centers=1)
 
     impl = kmeans.KMeans(1, max_iter, rstate)
@@ -68,7 +62,7 @@ def test_large():
     assert t.check_clusters(r_labels, i_labels, 1) == True
 
     
-def test_double_fit():
+def test_double_fit_kmeans():
     data1, r_labels1 = datasets.make_blobs(n_samples=288, centers=6, random_state=31)
     data2, r_labels2 = datasets.make_blobs(n_samples=288, centers=6, random_state=73)
 

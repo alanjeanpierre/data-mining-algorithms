@@ -63,7 +63,7 @@ for num in range(100, max_iter, increment):
     
     t_total = 0.0
     for i in range(n):
-        c = agnes.Agnes(3, 'single')
+        c = agnes.Agnes(3, 'wards')
         t0 = time.time()
         c.Fit(blobs)
         t1 = time.time()
