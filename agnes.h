@@ -15,11 +15,13 @@ class Cluster {
     public:
         Cluster(int point);
         Cluster(Cluster *l, Cluster *r);
-        virtual ~Cluster() {;}
+        virtual ~Cluster() { delete left; delete right; }
         virtual double Distance(Cluster *other, std::vector<std::vector<double> > *distmatrix) {return 0;}
         std::vector<int> *GetPoints();
         int GetID();
         void PrintDotGraph();
+        Cluster *GetLeft() { return left; }
+        Cluster *GetRight() { return right; }
 
         
         static double MinkowskiDist(double *c1, double *c2, int cols, int n);
@@ -92,6 +94,7 @@ private:
 
     std::vector<std::vector<double> > *distmatrix;
     std::map<int, Cluster*> clusters;
+    std::map<int, Cluster*> final_clusters;
     std::vector<Cluster*> NNChain;
 
     int n_clusters;

@@ -6,9 +6,9 @@
 #include <unordered_set>
 #include <map>
 #include <algorithm>
+#include <cassert>
 
 static int id_counter = 0;
-
 
 Agnes::Agnes(int n, char* alg) {
 
@@ -134,8 +134,10 @@ Cluster *Agnes::GetNextNearest(Cluster *active_cluster) {
 
 Cluster *Agnes::GetActiveCluster() {
 
-    if (NNChain.size() == 0)
-        NNChain.push_back(clusters.begin()->second);
+    if (NNChain.size() == 0) {
+        auto it = clusters.begin();
+        NNChain.push_back(it->second);
+    }
 
     Cluster *active_cluster = NNChain.back();
     return active_cluster;
@@ -195,7 +197,7 @@ void Agnes::Fit(double *arr, int rows, int cols) {
     // loop runs O(n) times with 2 O(c) computations per run
     // since c = O(n)
     // loop = O(n^2)
-    while(clusters.size() > (unsigned int)n_clusters) {
+    while(clusters.size() > 1) {
         #ifdef _DEBUG
         std::cerr << "Iteration " << iter++ << std::endl;
         #endif
@@ -221,13 +223,33 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         clusters.insert(std::pair<int, Cluster*>(merged->GetID(), merged));
     }
     id_counter = 0;
+
+    final_clusters.insert(std::pair<int, Cluster*>(clusters.begin()->first, clusters.begin()->second));
+    while (final_clusters.size() < n_clusters) {
+        // find cluster with max distance closed between children
+        double min = 1 << 30;
+        double max = 0;
+        Cluster *m = NULL;
+        for (std::map<int, Cluster*>::iterator it = final_clusters.begin(); it != final_clusters.end(); it++) {
+            double t = it->second->GetLeft()->Distance(it->second->GetRight(), distmatrix);
+            if (t > max) {
+                max = t;
+                m = it->second;
+            }
+        }
+
+        // replace that cluster with its children
+        final_clusters.erase(m->GetID());
+        final_clusters.insert(std::pair<int, Cluster*>(m->GetLeft()->GetID(), m->GetLeft()));
+        final_clusters.insert(std::pair<int, Cluster*>(m->GetRight()->GetID(), m->GetRight()));
+    }
 }
 
 void Agnes::GetLabels(int *out, int n) {
 
     int clust_num = 0;
     std::map<int, int> *clustermap = new std::map<int, int>(); 
-    for (std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++, clust_num++) {
+    for (std::map<int, Cluster*>::iterator it = final_clusters.begin(); it != final_clusters.end(); it++, clust_num++) {
         std::vector<int> *pts = it->second->GetPoints();
         for (unsigned int i = 0; i < pts->size(); i++) {
             clustermap->insert(std::pair<int, int>(pts->at(i), clust_num));
