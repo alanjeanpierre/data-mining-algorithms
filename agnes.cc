@@ -9,22 +9,12 @@
 
 static int id_counter = 0;
 
-static double (*Linkage)(double, double, double);
-
-double SingleLinkDistance(double single, double complete, double average) {
-    return single;
-}
-
-double CompleteLinkDistance(double single, double complete, double average) {
-    return complete;
-}
-
-double AverageLinkDistance(double single, double complete, double average) {
-    return average;
-}
-
 
 Agnes::Agnes(int n, char* alg) {
+
+    #ifdef _DEBUG
+    std::cerr << "Creating Agnes object targetting " << n << " clusters using " << alg << " linkage" <<std::endl;
+    #endif
 
     if (n < 1) {
         n = 1;
@@ -38,20 +28,19 @@ Agnes::Agnes(int n, char* alg) {
     if (alg) {
         algorithm = std::string(alg);
         if (algorithm.compare("single") == 0)
-            Linkage = SingleLinkDistance;
+            factory = new SingleLinkFactory();
         else if (algorithm.compare("complete") == 0)
-            Linkage = CompleteLinkDistance;
+            factory = new CompleteLinkFactory();
         else if(algorithm.compare("average") == 0)
-            Linkage = AverageLinkDistance;
+            factory = new AverageLinkFactory();
         else {
-            std::cerr << "Error: invalid algorithm " << algorithm << ", defaulting to single link" << std::endl;
-            Linkage = SingleLinkDistance;
+            std::cerr << "Error: invalid algorithm " << alg << ", defaulting to single link" << std::endl;
+            factory = new SingleLinkFactory();
         }
     } else {
         algorithm = std::string("single");
-        Linkage = SingleLinkDistance;
+        factory = new SingleLinkFactory();
     }
-    
 }
 
 Agnes::~Agnes() {
@@ -101,7 +90,8 @@ void Agnes::InitDataStructures(double *arr, int rows, int cols) {
         data->at(i) = t;
 
         // initialize single clusters
-        Cluster *tmp = new Cluster(data, i);
+        Cluster *tmp = factory->NewCluster(data, i);
+        
 
         clusters.insert(std::pair<int, Cluster*>(tmp->GetID(), tmp));
         
@@ -126,7 +116,7 @@ void Agnes::PrecomputeDistances() {
 }
 
 // O(c)
-Agnes::Cluster *Agnes::GetNextNearest(Cluster *active_cluster) {
+Cluster *Agnes::GetNextNearest(Cluster *active_cluster) {
     Cluster *next_nearest = clusters.end()->second;
     double min = 1 << 30;
     for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
@@ -145,7 +135,7 @@ Agnes::Cluster *Agnes::GetNextNearest(Cluster *active_cluster) {
     return next_nearest;
 }
 
-Agnes::Cluster *Agnes::GetActiveCluster() {
+Cluster *Agnes::GetActiveCluster() {
 
     if (NNChain.size() == 0)
         NNChain.push_back(clusters.begin()->second);
@@ -161,7 +151,7 @@ bool Agnes::ClusterIsInChain(Cluster *next_nearest) {
 
 }
 
-Agnes::Cluster *Agnes::MergeNearestClusters() {
+Cluster *Agnes::MergeNearestClusters() {
     // Remove top 2 nearest clusters from stack
     Cluster *l = NNChain.back();
     NNChain.pop_back();
@@ -182,7 +172,7 @@ Agnes::Cluster *Agnes::MergeNearestClusters() {
     
     // don't push merged cluster onto stack,
     // just add to cluster list
-    Cluster *tmp = new Cluster(data, l, r);
+    Cluster *tmp = factory->NewCluster(data, l, r);
     return tmp;
 }
 
@@ -264,7 +254,7 @@ void Agnes::PrintRow(int n) {
     std::cerr << std::endl;
 }
 
-Agnes::Cluster::Cluster(std::vector<std::vector<double> > *data, int point) {
+Cluster::Cluster(std::vector<std::vector<double> > *data, int point) {
     this->data = data;
     datapoints.push_back(point);
     id = id_counter++;
@@ -272,11 +262,11 @@ Agnes::Cluster::Cluster(std::vector<std::vector<double> > *data, int point) {
     right = NULL;
 }
 
-std::vector<int> *Agnes::Cluster::GetPoints() {
+std::vector<int> *Cluster::GetPoints() {
     return &datapoints;
 }
 
-Agnes::Cluster::Cluster(std::vector<std::vector<double> > *data, Cluster *l, Cluster *r) {
+Cluster::Cluster(std::vector<std::vector<double> > *data, Cluster *l, Cluster *r) {
     this->data = data;
     if (l)
         datapoints.insert(datapoints.end(), l->datapoints.begin(), l->datapoints.end());
@@ -288,31 +278,11 @@ Agnes::Cluster::Cluster(std::vector<std::vector<double> > *data, Cluster *l, Clu
     id = id_counter++;
 }
 
-int Agnes::Cluster::GetID() {
+int Cluster::GetID() {
     return id;
 }
 
-
-double Agnes::Cluster::Distance(Cluster *other, std::vector<std::vector<double> > *distmatrix) {
-    double min = 1 << 30;
-    double max = 0;
-    double avg = 0;
-    int n = datapoints.size() * other->datapoints.size();
-    for (unsigned int i = 0; i < datapoints.size(); i++) {
-        for (unsigned int j = 0; j < other->datapoints.size(); j++) {
-            double d = distmatrix->at(datapoints[i])[other->datapoints[j]];
-            if (d < min) 
-                min = d;
-            if (d > max)
-                max = d;
-            avg += d;
-        }
-    }
-
-    return Linkage(min, max, avg/n);
-}
-
-double Agnes::Cluster::MinkowskiDist(std::vector<double> c1, std::vector<double> c2, int n) {
+double Cluster::MinkowskiDist(std::vector<double> c1, std::vector<double> c2, int n) {
     double s = 0;
 
     for (unsigned int i = 0; i < c1.size(); i++) {
@@ -322,7 +292,7 @@ double Agnes::Cluster::MinkowskiDist(std::vector<double> c1, std::vector<double>
     return std::pow(s, 1.0/n);
 }
 
-void Agnes::Cluster::PrintCluster() {
+void Cluster::PrintCluster() {
     for (unsigned int i = 0; i < datapoints.size(); i++) {
         for (unsigned int j = 0; j < data->at(datapoints[i]).size(); j++) {
             std::cerr << data->at(datapoints[i])[j] << " ";
@@ -351,7 +321,7 @@ void Agnes::PrintDotGraph(char* args) {
     std::cout << "}" << std::endl;
 }
 
-void Agnes::Cluster::PrintDotGraph() {
+void Cluster::PrintDotGraph() {
     if (left) {
         std::cout << GetID() << " -> " << left->GetID() << ";" << std::endl;
         left->PrintDotGraph();
@@ -361,4 +331,46 @@ void Agnes::Cluster::PrintDotGraph() {
         right->PrintDotGraph();
 
     }
+}
+
+double SLCluster::Distance(Cluster *other, std::vector<std::vector<double> > *distmatrix) {
+    double min = 1 << 30;
+    std::vector<int> *o = other->GetPoints();
+    for (unsigned int i = 0; i < datapoints.size(); i++) {
+        for (unsigned int j = 0; j < o->size(); j++) {
+            double d = distmatrix->at(datapoints[i])[o->at(j)];
+            if (d < min) 
+                min = d;
+        }
+    }
+
+    return min;
+}
+
+double CLCluster::Distance(Cluster *other, std::vector<std::vector<double> > *distmatrix) {
+    double max = 0;
+    std::vector<int> *o = other->GetPoints();
+    for (unsigned int i = 0; i < datapoints.size(); i++) {
+        for (unsigned int j = 0; j < o->size(); j++) {
+            double d = distmatrix->at(datapoints[i])[o->at(j)];
+            if (d > max) 
+                max = d;
+        }
+    }
+
+    return max;
+}
+
+double ALCluster::Distance(Cluster *other, std::vector<std::vector<double> > *distmatrix) {
+    double avg = 0;
+    std::vector<int> *o = other->GetPoints();
+    int n = datapoints.size() * o->size();
+    for (unsigned int i = 0; i < datapoints.size(); i++) {
+        for (unsigned int j = 0; j < o->size(); j++) {
+            double d = distmatrix->at(datapoints[i])[o->at(j)];
+            avg += d;
+        }
+    }
+
+    return avg/n;
 }
