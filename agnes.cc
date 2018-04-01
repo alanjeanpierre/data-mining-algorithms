@@ -336,11 +336,11 @@ void Agnes::PrintDotGraph(char* args) {
 
 void Cluster::PrintDotGraph() {
     if (left) {
-        std::cout << GetID() << " -> " << left->GetID() << ";" << std::endl;
+        std::cout << GetID() << " -> " << left->GetID() << "[label=\"d=" << distance <<"\"];" << std::endl;
         left->PrintDotGraph();
     }
     if (right) {
-        std::cout << GetID() << " -> " << right->GetID() << ";" << std::endl;
+        std::cout << GetID() << " -> " << right->GetID() << "[label=\"d=" << distance <<"\"];"  << std::endl;
         right->PrintDotGraph();
 
     }
