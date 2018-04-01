@@ -4,9 +4,9 @@ import numpy as np
 import test_helper as t
 
 
-def test_simple_single_agnes():
+def test_simple_single_agnes(single):
     data = np.array([[1, 1],])
-    impl = agnes.Agnes(1, 'single')
+    impl = single
 
     impl.Fit(data)
 
@@ -15,10 +15,10 @@ def test_simple_single_agnes():
 
     assert t.check_clusters(r_labels, i_labels, 1) == True
 
-def test_simple_dual_agnes():
+def test_simple_dual_agnes(dual):
     data = np.array([[1, 1],
                      [-1, -1]])
-    impl = agnes.Agnes(2, 'single')
+    impl = dual
 
     impl.Fit(data)
 
@@ -27,10 +27,10 @@ def test_simple_dual_agnes():
 
     assert t.check_clusters(r_labels, i_labels, 2) == True
 
-def test_duplicate_dual_agnes():
+def test_duplicate_dual_agnes(dual):
     data = np.array([[1,1], [1,1], [1,1], [1,1], [1,1], [1,1], [1,1], 
                     [-1,-1], [-1,-1], [-1,-1], [-1,-1], [-1,-1], [-1,-1], [-1,-1], ])
-    impl = agnes.Agnes(2, 'single')
+    impl = dual
 
     impl.Fit(data)
 
@@ -39,45 +39,15 @@ def test_duplicate_dual_agnes():
 
     assert t.check_clusters(r_labels, i_labels, 2) == True
 
-def test_clear_blobs_agnes():
+def test_clear_blobs_agnes(dual):
     centers = ((-5, -5), (5, 5))
     data, r_labels = datasets.make_blobs(n_samples=100, centers=centers)
-    
-    impl = agnes.Agnes(2, 'single')
+    impl = dual
 
     impl.Fit(data)
     i_labels = impl.GetLabels(data.shape[0])
 
     assert t.check_clusters(r_labels, i_labels, 2) == True
-
-def test_unclear_blobs_agnes():
-    data, r_labels = datasets.make_blobs(n_samples=144)
-
-    impl = agnes.Agnes(3, 'single')
-    impl.Fit(data)
-
-    assert t.check_clusters_with_allowance(r_labels, impl.GetLabels(data.shape[0]), 3, .01) == True
-
-def test_linkage_agnes():
-    data, r_labels = datasets.make_blobs(n_samples=144, cluster_std=0.2)
-
-    single = agnes.Agnes(3, 'single')
-    complete = agnes.Agnes(3, 'complete')
-    average = agnes.Agnes(3, 'average')
-    wards = agnes.Agnes(3, 'wards')
-
-    single.Fit(data)
-    complete.Fit(data)
-    average.Fit(data)
-    wards.Fit(data)
-
-    ts = t.check_clusters(r_labels, single.GetLabels(data.shape[0]), 3,)
-    tc = t.check_clusters(r_labels, complete.GetLabels(data.shape[0]), 3,)
-    ta = t.check_clusters(r_labels, average.GetLabels(data.shape[0]), 3,)
-    tw = t.check_clusters(r_labels, wards.GetLabels(data.shape[0]), 3,)
-
-
-    assert ts == True and tc == True and ta == True and tw == True
 
 def test_double_fit_agnes():
     data1, r_labels1 = datasets.make_blobs(n_samples=288, centers=6, cluster_std=0.2, random_state=31)
@@ -92,3 +62,13 @@ def test_double_fit_agnes():
     t2 = t.check_clusters(r_labels2, impl.GetLabels(data2.shape[0]), 6)
 
     assert t1 == True and t2 == True
+
+def test_dimensionality_agnes(triple):
+    data, r_labels = datasets.make_blobs(n_samples=60, n_features=16, cluster_std=0.2, random_state=31)
+
+    impl = triple
+    impl.Fit(data)
+
+    assert True == t.check_clusters(r_labels, impl.GetLabels(data.shape[0]), 3)
+
+    

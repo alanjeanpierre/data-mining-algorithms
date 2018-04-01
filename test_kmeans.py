@@ -66,7 +66,7 @@ def test_double_fit_kmeans():
     data1, r_labels1 = datasets.make_blobs(n_samples=288, centers=6, random_state=31)
     data2, r_labels2 = datasets.make_blobs(n_samples=288, centers=6, random_state=73)
 
-    impl = kmeans.KMeans(6)
+    impl = kmeans.KMeans(6, max_iter, rstate)
     impl.Fit(data1)
 
     t1 = t.check_clusters_with_allowance(r_labels1, impl.GetLabels(data1.shape[0]), 6, .01)
@@ -75,3 +75,22 @@ def test_double_fit_kmeans():
     t2 = t.check_clusters_with_allowance(r_labels2, impl.GetLabels(data2.shape[0]), 6, .01)
 
     assert t1 == True and t2 == True
+
+def test_dimensionality_kmeans():
+    data, r_labels = datasets.make_blobs(n_samples=288, n_features=16, cluster_std=0.2, random_state=31)
+
+    impl = kmeans.KMeans(3, max_iter, rstate)
+    impl.Fit(data)
+
+    assert True == t.check_clusters(r_labels, impl.GetLabels(data.shape[0]), 3)
+
+def test_large_values_kmeans():
+    max_int = 1<<25
+    data, r_labels = datasets.make_blobs(n_samples=144, centers=(
+        (max_int, max_int), (0,0), (-max_int, -max_int),
+    ))
+
+    impl = kmeans.KMeans(3, max_iter, rstate)
+    impl.Fit(data)
+
+    assert True == t.check_clusters(r_labels, impl.GetLabels(data.shape[0]), 3)
