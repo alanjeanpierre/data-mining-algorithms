@@ -24,7 +24,7 @@ Agnes::Agnes(int n, char* alg) {
     }
 
     n_clusters = n;
-    distmatrix = new std::vector<std::vector<double> >();
+    distmatrix = NULL;
     if (alg) {
         algorithm = std::string(alg);
         if (algorithm.compare("single") == 0)
@@ -46,29 +46,29 @@ Agnes::Agnes(int n, char* alg) {
     }
 }
 
-Agnes::~Agnes() {
-    for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
-        delete it->second;
-        it->second = NULL;
-    }
-    clusters.clear();
-    delete distmatrix;
-    distmatrix = NULL;
-}
-
-void Agnes::InitDataStructures(double *arr, int rows, int cols) {
-
-    distmatrix->resize(rows);
-    Cluster::data = arr;
-    Cluster::n_attributes = cols;
-
-
+void Agnes::Clear() {
     for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
         delete it->second;
         it->second = NULL;
     }
     clusters.clear();
     final_clusters.clear();
+    delete distmatrix;
+    distmatrix = NULL;
+    id_counter = 0;
+}
+
+Agnes::~Agnes() {
+    Clear();
+}
+
+void Agnes::InitDataStructures(double *arr, int rows, int cols) {
+
+    Clear();
+    distmatrix = new std::vector<std::vector<double> >();
+    distmatrix->resize(rows);
+    Cluster::data = arr;
+    Cluster::n_attributes = cols;
 
     // build initial single value clusters
     double *d = arr;
@@ -227,7 +227,6 @@ void Agnes::Fit(double *arr, int rows, int cols) {
         Cluster *merged = MergeNearestClusters(d);
         clusters.insert(std::pair<int, Cluster*>(merged->GetID(), merged));
     }
-    id_counter = 0;
 
     final_clusters.insert(std::pair<int, Cluster*>(clusters.begin()->first, clusters.begin()->second));
     while (final_clusters.size() < (unsigned int)n_clusters) {

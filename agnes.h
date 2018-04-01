@@ -104,6 +104,7 @@ private:
 
     void InitDataStructures(double *arr, int rows, int cols);
     void PrecomputeDistances(double *arr, int rows, int cols);
+    void Clear();
 
     double GetNextNearest(Cluster *active_cluster, Cluster **next_nearest);
     Cluster *MergeNearestClusters(double d);
