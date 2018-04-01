@@ -324,6 +324,6 @@ std::vector<int> *KMeans::Cluster::GetPoints() {
 
 // helper function for comparing doubles
 bool withinTolerance(double a, double b, double t) {
-    return std::abs(a - b) <= t;
+    return std::abs(a - b)/std::abs(b) <= b*t;
 }
 
