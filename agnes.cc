@@ -240,11 +240,68 @@ void Agnes::Fit(double *arr, int rows, int cols) {
                 m = it->second;
             }
         }
-
+        
+        Cluster *l, *r;
+        l = m->GetLeft();
+        r = m->GetRight();
+        if (l == NULL || r == NULL) break;
         // replace that cluster with its children
         final_clusters.erase(m->GetID());
         final_clusters.insert(std::pair<int, Cluster*>(m->GetLeft()->GetID(), m->GetLeft()));
         final_clusters.insert(std::pair<int, Cluster*>(m->GetRight()->GetID(), m->GetRight()));
+    }
+}
+
+void Agnes::InferLabels(int *out, int n) {
+    std::map<int, Cluster*> inferred;
+
+    inferred.insert(std::pair<int, Cluster*>(clusters.begin()->first, clusters.begin()->second));
+    double var = inferred.begin()->second->GetIntraClusterDistance();
+    do {
+        // find cluster with max distance closed between children
+        double max = 0;
+        Cluster *m = inferred.begin()->second;
+        for (std::map<int, Cluster*>::iterator it = inferred.begin(); it != inferred.end(); it++) {
+            double t = it->second->GetIntraClusterDistance();
+            if (t > max) {
+                max = t;
+                m = it->second;
+            }
+        }
+        Cluster *l, *r;
+        l = m->GetLeft();
+        r = m->GetRight();
+
+        if (l == NULL || r == NULL) break;
+
+        // replace that cluster with its children
+        inferred.erase(m->GetID());
+        inferred.insert(std::pair<int, Cluster*>(l->GetID(), l));
+        inferred.insert(std::pair<int, Cluster*>(r->GetID(), r));
+
+        double u = 0;
+        int n = inferred.size();
+        std::for_each(inferred.begin(), inferred.end(), [&u](std::pair<int, Cluster*> c) { u += c.second->GetIntraClusterDistance();});
+        u /= n;
+        var = 0;
+        std::for_each(inferred.begin(), inferred.end(), [&var, &u](std::pair<int, Cluster*> c) { 
+            double tmp = c.second->GetIntraClusterDistance()-u; var += tmp*tmp;});
+        var /= n;
+
+    } while (var > 1);
+
+    int clust_num = 0;
+    std::map<int, int> *clustermap = new std::map<int, int>(); 
+    for (std::map<int, Cluster*>::iterator it = inferred.begin(); it != inferred.end(); it++, clust_num++) {
+        std::vector<int> *pts = it->second->GetPoints();
+        for (unsigned int i = 0; i < pts->size(); i++) {
+            clustermap->insert(std::pair<int, int>(pts->at(i), clust_num));
+        }
+    }
+
+
+    for (int i = 0; i < n; i++) {
+        out[i] = clustermap->find(i)->second;
     }
 }
 

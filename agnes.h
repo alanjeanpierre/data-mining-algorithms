@@ -130,6 +130,7 @@ public:
     ~Agnes();
     void Fit(double *arr, int rows, int cols);
     void GetLabels(int *out, int n);
+    void InferLabels(int *out, int n);
     void PrintDotGraph(char* args=NULL);
 };
 
