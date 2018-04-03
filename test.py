@@ -59,3 +59,18 @@ print(skk.labels_[:30])
 ag.Fit(blobs)
 print('agnes clusters')
 print(ag.GetLabels(len(blobs)).astype(np.int)[:30])
+
+# DBSCAN TESTING
+sys.stderr.write("Importing DBSCAN\n")
+import dbscan
+sys.stderr.write("Importing Finished\n")
+sys.stderr.write("Initting\n")
+db = dbscan.DBSCAN(0.5, 5)
+sys.stderr.write("Finished Init\n")
+sys.stderr.write("Fitting\n")
+db.Fit(a)
+sys.stderr.write("Finished Fitting\n")
+sys.stderr.write("Cluster Representation\n")
+# ????
+print(len(a))
+print(db.GetLabels(len(a)))
