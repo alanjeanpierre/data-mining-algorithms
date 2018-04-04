@@ -15,4 +15,5 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("dual", build_models(2))
     if 'triple' in metafunc.fixturenames:
         metafunc.parametrize("triple", build_models(3))
-    
+    if 'dbscanparams' in metafunc.fixturenames:
+        metafunc.parametrize('dbscanparams', [(eps/10, minpts) for eps in range(1, 11) for minpts in range(1, 11)])
