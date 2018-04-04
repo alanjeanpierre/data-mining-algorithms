@@ -41,6 +41,7 @@ private:
 	int n_clusters;
 	int n_attributes;
 	int n_datapoints;
+	int id;
 
 public:
 	DBSCAN(double eps, int minPoints);

@@ -23,6 +23,7 @@ DBSCAN::DBSCAN(double eps, int minPoints){
 	// save the values
 	this->eps = eps;
 	minPts = minPoints;
+	id = 0;
 
 }
 
@@ -120,6 +121,7 @@ void DBSCAN::Fit(double *arr, int rows, int cols){
 			}
 		}
 	}
+	id = 0;
 }
 
 bool DBSCAN::ExpandCluster(Point* point, int ClId) {
@@ -176,7 +178,6 @@ bool DBSCAN::ExpandCluster(Point* point, int ClId) {
 }
 
 int DBSCAN::NextID() { 
-	static int id = 0;
 	int r = id;
 	id += 1;
 	return r;
