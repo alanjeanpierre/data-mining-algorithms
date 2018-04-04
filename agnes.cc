@@ -28,21 +28,21 @@ Agnes::Agnes(int n, char* alg) {
     if (alg) {
         algorithm = std::string(alg);
         if (algorithm.compare("single") == 0)
-            factory = new SingleLinkFactory();
+            factory = new ClusterTemplateFactory<SLCluster>();
         else if (algorithm.compare("complete") == 0)
-            factory = new CompleteLinkFactory();
+            factory = new ClusterTemplateFactory<CLCluster>();
         else if(algorithm.compare("average") == 0)
-            factory = new AverageLinkFactory();
+            factory = new ClusterTemplateFactory<ALCluster>();
         else if(algorithm.compare("wards") == 0) {
-            factory = new WardsLinkFactory();
+            factory = new ClusterTemplateFactory<WLCluster>();
         }
         else {
             std::cerr << "Error: invalid algorithm " << alg << ", defaulting to single link" << std::endl;
-            factory = new SingleLinkFactory();
+            factory = new ClusterTemplateFactory<SLCluster>();
         }
     } else {
         algorithm = std::string("single");
-        factory = new SingleLinkFactory();
+        factory = new ClusterTemplateFactory<SLCluster>();
     }
 }
 

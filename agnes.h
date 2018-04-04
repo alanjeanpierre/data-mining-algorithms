@@ -56,8 +56,8 @@ class WLCluster : public Cluster {
     private:
     std::vector<double> *centroid;
     public:
-    WLCluster(int point); //  : Cluster(point);
-    WLCluster(Cluster *l, Cluster *r, double d); //  : Cluster(l, r, d);
+    WLCluster(int point); 
+    WLCluster(Cluster *l, Cluster *r, double d);
     ~WLCluster() { delete centroid; }
     double Distance(Cluster *other, std::vector<std::vector<double> > *distmatrix);
 };
@@ -70,31 +70,12 @@ class ClusterFactory {
 
 };
 
-class SingleLinkFactory : public ClusterFactory {
+template <class T>
+class ClusterTemplateFactory : public ClusterFactory {
     public:
-    Cluster *NewCluster(int point) { return new SLCluster(point); }
-    Cluster *NewCluster(Cluster *l, Cluster *r, double d) { return new SLCluster(l, r, d); }
+    Cluster *NewCluster(int point) { return new T(point); }
+    Cluster *NewCluster(Cluster *l, Cluster *r, double d) { return new T(l, r, d); }
 };
-
-class CompleteLinkFactory : public ClusterFactory {
-    public:
-    Cluster *NewCluster(int point) { return new CLCluster(point); }
-    Cluster *NewCluster(Cluster *l, Cluster *r, double d) { return new CLCluster(l, r, d); }
-};
-
-class AverageLinkFactory : public ClusterFactory {
-    public:
-    Cluster *NewCluster(int point) { return new ALCluster(point); }
-    Cluster *NewCluster(Cluster *l, Cluster *r, double d) { return new ALCluster(l, r, d); }
-};
-
-class WardsLinkFactory : public ClusterFactory {
-    public:
-    Cluster *NewCluster(int point) { return new WLCluster(point); }
-    Cluster *NewCluster(Cluster *l, Cluster *r, double d) { return new WLCluster(l, r, d); }
-
-};
-
 
 
 class Agnes {
