@@ -103,4 +103,4 @@ def test_epsilon_dbscan(dbscanparams):
     i_labels = impl.GetLabels(data.shape[0])
     r_labels = ref.labels_
     assert np.unique(i_labels).shape[0] == np.unique(r_labels).shape[0]
-    assert True == t.check_clusters(r_labels, i_labels, np.unique(i_labels).shape[0])
+    assert True == t.check_clusters_with_allowance(r_labels, i_labels, np.unique(i_labels).shape[0], 0.05)
