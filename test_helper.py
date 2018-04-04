@@ -27,6 +27,8 @@ def check_clusters(ref, impls, n_clusters):
 
 def check_clusters_with_allowance(ref, impls, n_clusters, percentage_err):
     m = build_k_by_k_matrix(ref, impls, n_clusters)
+    if m.shape == (1, 1): 
+        return True
     mins = [row.min() for row in m]
     if (max(mins) == 0):
         return True
