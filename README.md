@@ -7,24 +7,43 @@
 * Hector Flores
 
 # Proposed Project
-We will implement the K-means, Agnes, and DBSACN clustering algorithms. We will do it in C++ without any external libraries for portability. We will test our algorithms against both sk-learn and WEKA’s implementations. 
+We will implement the K-means, Agnes, and DBSCAN clustering algorithms. We will do it in C++11 without any external libraries for portability. We will test our algorithms against both sk-learn and WEKA’s implementations. 
 
 # Datasets
-* We will use simple ‘hello world’ type of datasets, such as the Iris dataset or BUPA dataset, along with generated data from sk-learn.
-  * Iris: http://archive.ics.uci.edu/ml/datasets/Iris 
-  * BUPA: ftp://ftp.ics.uci.edu/pub/machine-learning-databases/liver-disorders  
+* Primarily we will demonstrate the correctness with generated datasets from sk-learn
+* We will use simple ‘hello world’ type of datasets, such as the Iris dataset or BUPA dataset, purely to demonstrate its applicability
+  * [Iris Dataset](http://archive.ics.uci.edu/ml/datasets/Iris)
+  * [BUPA Dataset](ftp://ftp.ics.uci.edu/pub/machine-learning-databases/liver-disorders)
 
-# Project Timeline
-* March 2, 2018 -- Turn in proposal
-* March 7, 2018 -- Meet to discuss progress and work on algorithms
-* March 21, 2018 -- Meet to discuss progress and test algorithms
-* March 28, 2018 -- Meet to discuss progress and prepare progress report 
-* March 30, 2018 -- Turn in progress report
-* April 4, 2018 -- Hopefully finished with project by now and begin working on final presentation and paper
+# Requirements
+* Source installation requires:
+  * [Make](https://www.gnu.org/software/make/) 
+  * [Wget](https://www.gnu.org/software/wget/)
+  * [SWIG](http://www.swig.org/) 
+  * [GCC](https://gcc.gnu.org/) or similar C++11 compliant compiler
+  * [Python3](https://www.python.org/downloads/) 
+  * [Numpy](http://www.numpy.org/) 
+* To run the example jupyter notebook, the following packages are required:
+  * [Jupyter Notebook](http://jupyter.org/) 
+  * [scikit-learn](http://scikit-learn.org/stable/)
+  * [NumPy](http://www.numpy.org/)
+  * [Matplotlib](https://matplotlib.org/) 
+* To run the tests, the only dependencies are:
+  * [Pytest](https://docs.pytest.org/en/latest/) 
+  * [scikit-learn](http://scikit-learn.org/stable/)
+  * [NumPy](http://www.numpy.org/)
 
-# Milestones
-* Find datasets to test accuracy of algorithms.
-* Research algorithms
-* Implement algorithms
-* Test and Re-factor algorithms as much as necessary
+# Installation
+* On *NIX Simply run `make` in the root directory. 
+  * This will compile the files an generate a python file for import in the current directory. This option does **not** install to your python import location
+* On Windows, run the included install.bat file
+  * This option installs the python files to your import location
+* There are prebuilt binaries and python scripts available for some common platforms in `bin.tar.gz`
 
+# Testing
+* Our software comes with tests in the root directory
+* Simply run with `pytest`
+* During compilation, passing the environment variable `export DEBUG=1` will enable debug output on stderr
+
+# Examples
+* Please refer to the `example.ipynb` file for comprehensive examples
