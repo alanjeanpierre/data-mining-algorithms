@@ -37,8 +37,10 @@ We will implement the K-means, Agnes, and DBSCAN clustering algorithms. We will 
 * On *NIX Simply run `make` in the root directory. 
   * This will compile the files an generate a python file for import in the current directory. This option does **not** install to your python import location
 * On Windows, run the included install.bat file
+  * Manually download and place in the root directory the required dependencies [numpy.i](https://raw.githubusercontent.com/numpy/numpy/master/tools/swig/numpy.i) and [pyfragments.swg](https://raw.githubusercontent.com/numpy/numpy/master/tools/swig/pyfragments.swg)
+  * Ensure that the SWIG executable is either in your path or the root directory
   * This option installs the python files to your import location
-* There are prebuilt binaries and python scripts available for some common platforms in `bin.tar.gz`
+* There are prebuilt binaries and python scripts available for some common platforms in `bin.tar.gz`. Simply extract to an accessible (ie, the root) directory for python
 
 # Testing
 * Our software comes with tests in the root directory
