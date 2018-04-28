@@ -1,6 +1,7 @@
 #include "agnes.h"
 #include "numpy_helper.h"
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <cmath>
 #include <unordered_set>
@@ -371,36 +372,42 @@ double Cluster::MinkowskiDist(std::vector<double> *c1, std::vector<double> *c2, 
     return std::pow(s, 1.0/n);
 }
 
-void Agnes::PrintDotGraph(char* args) {
-    std::cout << "digraph G {" << std::endl;
+std::string Agnes::PrintDotGraph(char* args) {
+    std::string s;
+    std::stringstream buffer;
+    buffer << "digraph G {" << std::endl;
 
     if (args)
-        std::cout << args << std::endl;
+        buffer << args << std::endl;
 
     for(std::map<int, Cluster*>::iterator it = clusters.begin(); it != clusters.end(); it++) {
-        std::cout << "root -> " << it->first << ";" << std::endl;
-        it->second->PrintDotGraph(); 
+        buffer << "root -> " << it->first << ";" << std::endl;
+        buffer << it->second->PrintDotGraph(); 
     }
 
-    std::cout << "{rank = max; ";
+    buffer << "{rank = max; ";
     for (int i = 0; i < n_datapoints; i++) {
-        std::cout << i << "; ";
+        buffer << i << "; ";
     }
-    std::cout << "}" << std::endl;
+    buffer << "}" << std::endl;
 
-    std::cout << "}" << std::endl;
+    buffer << "}" << std::endl;
+
+    return buffer.str(); 
 }
 
-void Cluster::PrintDotGraph() {
+std::string Cluster::PrintDotGraph() {
+    std::stringstream buffer; 
     if (left) {
-        std::cout << GetID() << " -> " << left->GetID() << "[label=\"d=" << distance <<"\"];" << std::endl;
-        left->PrintDotGraph();
+        buffer << GetID() << " -> " << left->GetID() << "[label=\"d=" << distance <<"\"];" << std::endl;
+        buffer << left->PrintDotGraph();
     }
     if (right) {
-        std::cout << GetID() << " -> " << right->GetID() << "[label=\"d=" << distance <<"\"];"  << std::endl;
-        right->PrintDotGraph();
+        buffer << GetID() << " -> " << right->GetID() << "[label=\"d=" << distance <<"\"];"  << std::endl;
+        buffer << right->PrintDotGraph();
 
     }
+    return buffer.str(); 
 }
 
 double SLCluster::Distance(Cluster *other, std::vector<std::vector<double> > *distmatrix) {

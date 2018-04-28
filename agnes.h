@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <sstream>
 
 class Cluster {
     protected:
@@ -19,7 +20,7 @@ class Cluster {
         double GetIntraClusterDistance() { return distance; }
         std::vector<int> *GetPoints();
         int GetID();
-        void PrintDotGraph();
+        std::string PrintDotGraph();
         Cluster *GetLeft() { return left; }
         Cluster *GetRight() { return right; }
 
@@ -112,7 +113,7 @@ public:
     void Fit(double *arr, int rows, int cols);
     void GetLabels(int *out, int n);
     void InferLabels(int *out, int n);
-    void PrintDotGraph(char* args=NULL);
+    std::string PrintDotGraph(char* args=NULL);
 };
 
 #endif
